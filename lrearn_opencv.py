@@ -207,3 +207,64 @@ from matplotlib import pyplot as plt
 # cv.imshow("image", img)
 # cv.waitKey(0)
 # cv.destroyAllWindows()
+
+# # probabilistic hough circle transform
+# img = cv.imread("test_images\\smarties.png")
+# output = img.copy()
+# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# gray = cv.medianBlur(gray, 5)
+# circles = cv.HoughCircles(gray, cv.HOUGH_GRADIENT, 1, 20, param1=50, param2=30, minRadius=0, maxRadius=0)
+# print (circles)
+# detected_c = np.uint16(np.around(circles))
+# print (detected_c)
+# for (x, y, r) in detected_c[0, :]:
+#     cv.circle(output, (x,y), r, (0,255,0), 3)
+#     cv.circle(output, (x,y), 2, (0,255,255), 3)
+#
+# cv.imshow("output", output)
+# cv.waitKey(0)
+# cv.destroyAllWindows()
+
+# # 8:00 - how to detect faces
+# face_cascade = cv.CascadeClassifier(r"C:\Users\Adi Rosental\Documents\she_code\opencv\opencv\data\haarcascades\haarcascade_frontalface_default.xml")
+# img = cv.imread("test_images\\messi5.jpg")
+# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# faces = face_cascade.detectMultiScale(gray, 1.1, 4)
+#
+# for (x, y, w, h) in faces:
+#     cv.rectangle(img, (x,y), (x+w,y+h), (255, 0, 0), 3)
+# cv.imshow("image", img)
+# cv.waitKey()
+
+# # 8:30 - corner detector
+#
+# img = cv.imread("test_images\\chessboard.png")
+# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+#
+# gray = np.float32(gray)
+# dst = cv.cornerHarris(gray, 2, 3, 0.04)
+#
+# dst = cv.dilate(dst, None)
+# img[dst > 0.01 * dst.max()] = [0,0,255]
+#
+# cv.imshow("image", img)
+#
+# if cv.waitKey(0) & 0Xff == 27:
+#     cv.destroyAllWindows()
+
+# # 8:40 - Tomasi corner detection (with max vertexs
+# img = cv.imread("test_images\\templ.png")
+# gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+#
+# corners = cv.goodFeaturesToTrack(gray, 10, 0.01, 10)
+# corners = np.int0(corners)
+#
+# for i in corners:
+#     x,y = i.ravel()
+#     cv.circle(img, (x,y), 3, 255, -1)
+#
+# cv.imshow("dst", img)
+#
+# if cv.waitKey(0) & 0Xff == 27:
+#     cv.destroyAllWindows()
+
