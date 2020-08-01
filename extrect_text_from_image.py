@@ -56,7 +56,7 @@ cv2.destroyAllWindows()
 # print (boxes)
 str= pytesseract.image_to_string(binary_thresh, lang="heb")
 str= pytesseract.image_to_string(dilation, lang="heb")
-str= pytesseract.image_to_string(thresh_drawContours, lang="heb")
+str= pytesseract.image_to_string(drawContours, lang="heb")
 print (str)
 # boxes= pytesseract.image_to_boxes(img)
 # for b in boxes.splitlines():
