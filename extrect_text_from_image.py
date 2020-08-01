@@ -17,16 +17,30 @@ dilation = cv2.dilate(binary_thresh, kernal , iterations=1)
 erosion = cv2.erode(binary_thresh, kernal, iterations=2)
 #th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 22)
 
-titles = ["image", "binary_thresh", "dilation","erosion"]
-images = [img, binary_thresh, dilation, erosion]
 
-for i in range(4):
-    plt.subplot(2,2,i+1), plt.imshow(images[i], 'gray')
+ret, thresh = cv2.threshold(img, 127, 255, 0)
+contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+print("number of contuers:"+str(len(contours)))
+img_copy = np.array(img[:])
+drawContours = cv2.drawContours(img_copy, contours, -1, (0, 255, 0), 1)
+_, thresh_drawContours = cv2.threshold(drawContours, 127, 255, cv2.THRESH_BINARY_INV)
+
+titles = ["image", "binary_thresh", "dilation","erosion", "find contours"]
+images = [img, binary_thresh, dilation, erosion, thresh_drawContours]
+
+
+for i in range(5):
+    plt.subplot(2,3,i+1), plt.imshow(images[i], 'gray')
     plt.title(titles[i])
     plt.xticks([]), plt.yticks([])
+
 plt.show()
 
 
+
+
+cv2.waitKey(0)
+cv2.destroyAllWindows()
 
 # lines = cv2.HoughLinesP(binary_thresh,1,np.pi/180, 100, minLineLength=300, maxLineGap=20)
 # print(lines)
@@ -42,6 +56,7 @@ plt.show()
 # print (boxes)
 str= pytesseract.image_to_string(binary_thresh, lang="heb")
 str= pytesseract.image_to_string(dilation, lang="heb")
+str= pytesseract.image_to_string(thresh_drawContours, lang="heb")
 print (str)
 # boxes= pytesseract.image_to_boxes(img)
 # for b in boxes.splitlines():

@@ -37,26 +37,155 @@ from matplotlib import pyplot as plt
 # cv.imshow("th2", th2)
 # cv.imshow("th3", th3)
 
-img = cv.imread("test_images\smarties.png", cv.IMREAD_GRAYSCALE)
-_, mask = cv.threshold(img, 220, 225, cv.THRESH_BINARY_INV)
+# # ~learn how to clean noises in image~
+# img = cv.imread("test_images\smarties.png", cv.IMREAD_GRAYSCALE)
+# _, mask = cv.threshold(img, 220, 225, cv.THRESH_BINARY_INV)
+#
+# kernal = np.ones((2,2), np.uint8)
+# dilation = cv.dilate(mask, kernal , iterations=3)
+# erosion = cv.erode(mask, kernal, iterations=2)
+# opening = cv.morphologyEx(mask, cv.MORPH_OPEN, kernal)
+# closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernal)
+# mg = cv.morphologyEx(mask, cv.MORPH_GRADIENT, kernal)
+# th = cv.morphologyEx(mask, cv.MORPH_TOPHAT, kernal)
+#
+# titles = ["image", "mask", "dilation","erosion", "opening", "closing", "mg", "th"]
+# images = [img, mask, dilation, erosion,opening,closing,mg, th]
+#
+# for i in range(8):
+#     plt.subplot(2,4,i+1), plt.imshow(images[i], 'gray')
+#     plt.title(titles[i])
+#     plt.xticks([]), plt.yticks([])
+# plt.show()
+#
+#
+# cv.waitKey(0)
+# cv.destroyAllWindows()
 
-kernal = np.ones((2,2), np.uint8)
-dilation = cv.dilate(mask, kernal , iterations=3)
-erosion = cv.erode(mask, kernal, iterations=2)
-opening = cv.morphologyEx(mask, cv.MORPH_OPEN, kernal)
-closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernal)
-mg = cv.morphologyEx(mask, cv.MORPH_GRADIENT, kernal)
-th = cv.morphologyEx(mask, cv.MORPH_TOPHAT, kernal)
+# # 3:40
+# # ~learn how to clean noises in image~
+# img = cv.imread("test_images\\pic2.png")
+# img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+#
+# # with this kernel we decide to bring equal wieght to each pixel
+# kernal = np.ones((9,9), np.float32)/81
+#
+# dst = cv.filter2D(img, -1, kernal)
+# blur = cv.blur(img, (9,9));
+# gblue = cv.GaussianBlur(img, (9,9), 0)
+# # use the next filter for salt and paper noise
+# median = cv.medianBlur(img, 9)
+# # use the next filter for remove noises and keep the edge sharp
+# bilateralFilter = cv.bilateralFilter(img, 9, 75,75)
+#
+# titles = ["image", "2D Convolution", "blur", "Gaussianblue", "median", "bilateralFilter"]
+# images = [img, dst, blur, gblue, median, bilateralFilter]
+#
+# for i in range(6):
+#     plt.subplot(2,3,i+1), plt.imshow(images[i], 'gray')
+#     plt.title(titles[i])
+#     plt.xticks([]), plt.yticks([])
+# plt.show()
 
-titles = ["image", "mask", "dilation","erosion", "opening", "closing", "mg", "th"]
-images = [img, mask, dilation, erosion,opening,closing,mg, th]
+# # 4:11 - image gradient
+#
+# # img = cv.imread("test_images\\sudoku.png", cv.IMREAD_GRAYSCALE)
+# img = cv.imread("test_images\\messi5.jpg", cv.IMREAD_GRAYSCALE)
+# # we cam add ksize(=3)
+# lap = cv.Laplacian(img, cv.CV_64F)
+# lap = np.uint8(np.absolute(lap))
+# sobelX = cv.Sobel(img, cv.CV_64F, 1, 0)
+# sobelY = cv.Sobel(img, cv.CV_64F, 0, 1)
+# # Canny edge detector
+# edges = cv.Canny(img, 100, 200)
+#
+# sobelX= np.uint8(np.absolute(sobelX))
+# sobelY= np.uint8(np.absolute(sobelY))
+#
+# # combain sobelX and sobelY
+# sobelCombain = cv.bitwise_or(sobelX, sobelY)
+#
+# titles = ["image", "Laplacian", "sobelX", "sobelY", "sobelCombain", "edges"]
+# images = [img, lap, sobelX, sobelY, sobelCombain, edges]
+#
+# for i in range(6):
+#     plt.subplot(2,3,i+1), plt.imshow(images[i], 'gray')
+#     plt.title(titles[i])
+#     plt.xticks([]), plt.yticks([])
+# plt.show()
 
-for i in range(8):
-    plt.subplot(2,4,i+1), plt.imshow(images[i], 'gray')
-    plt.title(titles[i])
-    plt.xticks([]), plt.yticks([])
-plt.show()
+# # 4:32 - image pyramids
+#
+# img = cv.imread("test_images\\lena_learn_opencv.jpg")
+# lr = cv.pyrDown(img)
+# hr = cv.pyrUp(img)
+# hr2 = cv.pyrUp(lr)
+#
+# cv.imshow("original image", img)
+# cv.imshow("pytdown 1 image", lr)
+# cv.imshow("pyrUp 1 image", hr)
+# cv.imshow("pyrUp 1 image", hr2)
+#
+# cv.waitKey(0)
+# cv.destroyAllWindows()
 
+#
+# # 5:15 find and drow contours
+#
+# img = cv.imread("test_images\\opencv-logo.png")
+# imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# ret, thresh = cv.threshold(imgray, 127, 255, 0)
+# contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
+# print("number of contuers:"+str(len(contours)))
+#
+# cv.drawContours(img, contours, -1, (0,255,0), 3)
+# cv.imshow("Image", img)
+# cv.imshow("Image GRAY", imgray)
+#
+# cv.waitKey(0)
+# cv.destroyAllWindows()
 
-cv.waitKey(0)
-cv.destroyAllWindows()
+#
+#
+# # 5:24 - basic motion detection
+#
+# # 5:44 - shape detection
+# img = cv.imread("test_images\\detect_blob.png")
+# imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# _, thresh = cv.threshold(imgray, 0, 255, cv.THRESH_BINARY)
+#
+# contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
+# print(len(contours))
+# for contuor in contours:
+#   # algorithem to reduce number of vertexes
+#     approx = cv.approxPolyDP(contuor, 0.01*cv.arcLength(contuor, True), True)
+#     cv.drawContours(img, [approx], -1, (0,0,255), 5)
+#     x = approx.ravel()[0]
+#     y = approx.ravel()[1]
+#     if len(approx) == 4:
+#         cv.putText(img, "square", (x,y-10), cv.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255,))
+#
+# cv.imshow("shapes", img)
+# cv.waitKey(0)
+#
+# # 6:01 - histogram
+#
+# # 6:18 tamplate matchine - search for elements
+#
+# img = cv.imread("test_images\\messi5.jpg")
+# imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# template = cv.imread("test_images\\messi_face.jpg", 0)
+# w, h = template.shape[::-1]
+#
+# res = cv.matchTemplate(imgray, template, cv.TM_CCOEFF_NORMED)
+#
+# threshold = 0.95;
+# loc = np.where(res >= threshold)
+# print(loc)
+# for pt in zip(*loc[::-1]):
+#     cv.rectangle(img, pt, (pt[0]+w, pt[1] +h), (0,0,255), 2)
+#
+# cv.imshow("image", img)
+# cv.waitKey(0)
+# cv.destroyAllWindows()
+
