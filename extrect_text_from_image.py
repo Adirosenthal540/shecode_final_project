@@ -1,19 +1,33 @@
 import cv2
 import pytesseract
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 import numpy as np
 pytesseract.pytesseract.tesseract_cmd =  r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-img = cv2.imread(r"C:\Users\Adi Rosental\Desktop\Capture3.png")
-img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture5.PNG", 0)
+cv2.imshow("img",img )
+cv2.waitKey(0)
+#img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
 #print(pytesseract.image_to_string(img))
-_, binary_thresh = cv2.threshold(img, 125,255, cv2.THRESH_BINARY_INV)
-fig = plt.figure(figsize = (12,12))
-fig.add_subplot(1,2,1)
-plt.imshow(img)
-fig.add_subplot(1,2,2)
-plt.imshow(binary_thresh)
+_, binary_thresh = cv2.threshold(img, 120,255, cv2.THRESH_BINARY_INV)
+
+kernal = np.ones((2,2), np.uint8)
+dilation = cv2.dilate(binary_thresh, kernal , iterations=1)
+erosion = cv2.erode(binary_thresh, kernal, iterations=2)
+#th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 15, 22)
+
+titles = ["image", "binary_thresh", "dilation","erosion"]
+images = [img, binary_thresh, dilation, erosion]
+
+for i in range(4):
+    plt.subplot(2,2,i+1), plt.imshow(images[i], 'gray')
+    plt.title(titles[i])
+    plt.xticks([]), plt.yticks([])
 plt.show()
+
+
+
 # lines = cv2.HoughLinesP(binary_thresh,1,np.pi/180, 100, minLineLength=300, maxLineGap=20)
 # print(lines)
 # angle = 0
@@ -26,8 +40,9 @@ plt.show()
 # hImg, wImg,_= img.shape
 # boxes = pytesseract.image_to_data((img))
 # print (boxes)
-# str= pytesseract.image_to_string(binary_thresh)
-# print (str)
+str= pytesseract.image_to_string(binary_thresh, lang="heb")
+str= pytesseract.image_to_string(dilation, lang="heb")
+print (str)
 # boxes= pytesseract.image_to_boxes(img)
 # for b in boxes.splitlines():
 #     print(b)
