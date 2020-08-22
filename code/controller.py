@@ -57,6 +57,7 @@ def Extract_files_from_folder(folder,  is_txtFiles=0):
     return images
 
 class Controller():
+
     def __init__(self):
         self.isTrain = get_input("Is this a train or test? (train / test)" , ["train","test"]) == "train"
         self.images = []
@@ -65,28 +66,47 @@ class Controller():
         if (self.isTrain):
             self.is_handwritePage = get_input("Do you want to train the network with your handwrite by using the sccaned pages? (yes/no)", ["yes", "no"]) == "yes"
             if (self.is_handwritePage):
-                folder = input ("Enter the folder's path with all the images : ")
-                images = Extract_files_from_folder(folder)
-                for image in images:
-                    self.images.append(cv.imread(image, 1))
+                self.AskImagesOfHandwriteTrain()
             else:
-                folder = input("Enter the folder's path with all the images \
-                      and there labels (text files) with the same names (like: 'image1.png', 'image1.txt'): ")
-                images, text_files = Extract_files_from_folder(folder, True)
-                for i in range(len(images)):
-                    self.images.append(cv.imread(images[i], 1))
-                    txt_file = open(text_files[i], "r")
-                    self.text_in_images.append(txt_file.read())
-                    txt_file.close()
+                self.AskLabeledImagesAndTextFiles()
         else:
-            print("Enter all the paths of the images you want to extract text from (when finish insert 'END') : ")
-            i = 1
-            pathImage = input("image "+str(i)+" :")
-            while pathImage != 'END':
-                if (CheckImage(pathImage)):
-                    self.images.append(cv.imread(pathImage, 1))
-                    i += 1
-                pathImage = input("image " + str(i) + " :")
+            self.AskImagesForTest()
 
+    def AskImagesOfHandwriteTrain(self):
+        folder = input("Enter the folder's path with all the images : ")
+        images = Extract_files_from_folder(folder)
+        for image in images:
+            self.images.append(cv.imread(image, 1))
 
-        
+    def AskLabeledImagesAndTextFiles(self):
+        folder = input("Enter the folder's path with all the images \
+              and there labels (text files) with the same names (like: 'image1.png', 'image1.txt'): ")
+        images, text_files = Extract_files_from_folder(folder, True)
+        for i in range(len(images)):
+            self.images.append(cv.imread(images[i], 1))
+            txt_file = open(text_files[i], "r")
+            self.text_in_images.append(txt_file.read())
+            txt_file.close()
+
+    def AskImagesForTest(self):
+        print("Enter all the paths of the images you want to extract text from (when finish insert 'END') : ")
+        i = 1
+        pathImage = input("image " + str(i) + " :")
+        while pathImage != 'END':
+            if (CheckImage(pathImage)):
+                self.images.append(cv.imread(pathImage, 1))
+                i += 1
+            pathImage = input("image " + str(i) + " :")
+
+    def ImageProcessingBeforeTesseract(self):
+        for image in self.images:
+            pass #call processing funcs from "image processing"
+            # save in
+
+    def ExtractTextFromImage(self):
+        for image in self.images:
+            pass #call testing funcs from "modelTesseract"
+
+    def PrintExtractText(self):
+        for text in self.text_in_images:
+            print (text)
