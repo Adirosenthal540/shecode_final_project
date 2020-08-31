@@ -1,22 +1,39 @@
 import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
-img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\lena_learn_opencv.jpg", -1)
-print(img)
-print(img.shape)
-print(img.shape[0])
-img = np.zeros([512, 512], np.uint8)
-font = cv.FONT_HERSHEY_SIMPLEX
-img = cv.putText(img, "opencv", (10,500), font, 4 , (255,255,255), 10, cv.LINE_AA)
-crop_img = img[400:500, 300:350]
-cv.imshow("cropped", crop_img)
-cv.waitKey(0)
-#img = cv.imread("test_images\gradient.png", 0)
-#_, th1 = cv.threshold(img, 127, 255)
-cv.imshow("image", img)
 
-cv.waitKey(0)
+def click_event(event, x, y, flags, param):
+    if event ==cv.EVENT_LBUTTONDOWN:
+        cv.circle(img, (x,y), 3, (0,0,255), -1)
+        points.append((x,y))
+        if len(points) >= 2:
+            cv.line(img, points[-1], points[-2], (255,0,0), 5)
+        cv.imshow("Image", img)
+img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\lena_learn_opencv.jpg", -1)
+#img = np.zeros((512,512,3), np.uint8)
+# print(img)
+# print(img.shape)
+# print(img.shape[0])
+cv.imshow("Image", img)
+points = []
+cv.setMouseCallback("Image", click_event)
+cv.waitKey()
 cv.destroyAllWindows()
+print(points)
+
+
+# img = np.zeros([512, 512], np.uint8)
+# font = cv.FONT_HERSHEY_SIMPLEX
+# img = cv.putText(img, "opencv", (10,500), font, 4 , (255,255,255), 10, cv.LINE_AA)
+# crop_img = img[400:500, 300:350]
+# cv.imshow("cropped", crop_img)
+# cv.waitKey(0)
+# #img = cv.imread("test_images\gradient.png", 0)
+# #_, th1 = cv.threshold(img, 127, 255)
+# cv.imshow("image", img)
+#
+# cv.waitKey(0)
+# cv.destroyAllWindows()
 
 #cv2.imwrite("lena_copy.png", img)
 # font = cv2.FONT_HERSHEY_SIMPLEX
