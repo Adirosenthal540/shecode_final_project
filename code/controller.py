@@ -26,6 +26,7 @@ class Controller():
     def processScannedImages(self):
         for image in self.images:
             if image.isHandwrite:
+                pass
 
 
     def PrintExtractText(self):
@@ -34,4 +35,5 @@ class Controller():
 
 
     def main(self):
-        pass
+        for image in self.images:
+            image.GetLineBounds(image.imageArrays["original"])

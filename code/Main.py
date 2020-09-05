@@ -103,7 +103,7 @@ def AskImagesOfHandwriteTrain():
     answer = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
     imagesInFolder = Extract_files_from_folder(folder)
     for imageInFolder in imagesInFolder:
-        image = Image(cv.imread(imageInFolder, 1), isTrain = True, isHandwrite = True)
+        image = Image(cv.imread(imageInFolder, 0), isTrain = True, isHandwrite = True)
         setBorderOfText(answer, image)
         images.append(image)
         return folder
@@ -121,7 +121,7 @@ def AskLabeledImagesAndTextFiles():
         text= txt_file.read()
         txtFiles.append(text)
         txt_file.close()
-        image = Image(cv.imread(imagesInFolder[i], 1), isTrain = True, label = txtFiles[i])
+        image = Image(cv.imread(imagesInFolder[i], 0), isTrain = True, label = txtFiles[i])
         setBorderOfText(answer, image)
         images.append(image)
     return folder
@@ -134,7 +134,7 @@ def AskImagesAsInput_tesseract():
     answer = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
     while pathImage != 'END':
         if (CheckImage(pathImage)):
-            image = Image(cv.imread(pathImage, 1), isTrain = False)
+            image = Image(cv.imread(pathImage, 0), isTrain = False)
             setBorderOfText(answer, image)
             images.append(image)
             i += 1

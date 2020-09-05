@@ -34,25 +34,25 @@ def FindLines(img):
     cv.waitKey(0)
     cv.destroyAllWindows()
 
-def click_event(event, x, y, flags, param):
-    if event == cv.EVENT_LBUTTONDOWN:
-        cv.circle(img, (x,y), 3, (0,0,255), -1)
-        points.append((x,y))
-        if len(points) >= 2:
-            cv.line(img, points[-1], points[-2], (255,0,0), 5)
-        cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-
-def selectTextArea(img, points):
-    cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-    cv.setMouseCallback("Select_area_of_text-need_to_be_a_square", click_event)
-    cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-    cv.waitKey()
-    cv.destroyAllWindows()
-    if len(points)<4:
-        print( "ERROR - YOU NEED TO DROW SQUARE")
-        sys.exit()
-    points = np.array(points[0:4])
-    return points
+# def click_event(event, x, y, flags, param):
+#     if event == cv.EVENT_LBUTTONDOWN:
+#         cv.circle(img, (x,y), 3, (0,0,255), -1)
+#         points.append((x,y))
+#         if len(points) >= 2:
+#             cv.line(img, points[-1], points[-2], (255,0,0), 5)
+#         cv.imshow("Select_area_of_text-need_to_be_a_square", img)
+#
+# def selectTextArea(img, points):
+#     cv.imshow("Select_area_of_text-need_to_be_a_square", img)
+#     cv.setMouseCallback("Select_area_of_text-need_to_be_a_square", click_event)
+#     cv.imshow("Select_area_of_text-need_to_be_a_square", img)
+#     cv.waitKey()
+#     cv.destroyAllWindows()
+#     if len(points)<4:
+#         print( "ERROR - YOU NEED TO DROW SQUARE")
+#         sys.exit()
+#     points = np.array(points[0:4])
+#     return points
 
 def reorder(myPoints):
     myPoints = myPoints.reshape((4, 2))
@@ -84,7 +84,7 @@ def WropImag(img, points):
 def main():
     global points
     points=[]
-    img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\unnamed1.jpg", -1)
+    img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\unnamed1.jpg", 0)
     image = Image(img)
 
     image.resize(int((WIDTH / image.ImageWidth())*image.ImageWidth()), int((WIDTH / image.ImageWidth())*image.ImageHeight()))

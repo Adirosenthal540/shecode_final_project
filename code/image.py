@@ -4,8 +4,8 @@ from matplotlib import pyplot as plt
 import sys
 
 PIXEL_REMOVE = 20
-THRESHOLDTIGHT = 0.75
-MINHIGHTLETTER = 20 # MIN PIXEL NUM FOR LETTER \ LINE
+THRESHOLDTIGHT = 110
+MINHIGHTLETTER = 10 # MIN PIXEL NUM FOR LETTER \ LINE
 
 def reorder(myPoints):
     myPoints = myPoints.reshape((4, 2))
@@ -98,8 +98,8 @@ class Image():
 
     def GetLineBounds(self, img):
         lineBounds = []
-        maxValImage = np.amax(img, axis=1)
-        smallThanTHRESHOLDTIGHT = maxValImage < THRESHOLDTIGHT
+        minValImage = np.amin(img, axis=1)
+        smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
         row = 1
         startL = 0
         endL = 0
@@ -111,14 +111,19 @@ class Image():
                 if smallThanTHRESHOLDTIGHT[row + 1] == False:
                     endL = row
                 row += 1
-
-            if endL - startL <= MINHIGHTLETTER:
-                row += 1
-                continue
-            else:
-                lineBounds.append((startL, endL))
+            if (smallThanTHRESHOLDTIGHT[row - 1] == True):
+                if endL - startL <= MINHIGHTLETTER:
+                    row += 1
+                    continue
+                else:
+                    lineBounds.append((startL, endL))
+                    cv.line(imgCopy, (0,startL), (0,endL), 0, 5)
+                    cv.line(imgCopy, (0,startL), (self.ImageWidth(img),startL), 0, 5)
+                    cv.line(imgCopy, (0,endL), (self.ImageWidth(img),endL), 0, 5)
             row += 1
-        cv.line(imgeSelectEdge, points[-1], points[-2], (255, 0, 0), 5)
+        cv.imshow("line bounds image", imgCopy)
+        cv.waitKey(0)
+
         return lineBounds
 
 
