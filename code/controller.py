@@ -10,7 +10,7 @@ class Controller():
         self.isTrain = isTrain
         self.images = images
         self.text_in_images = []
-        self.processedImage = None
+        self.processedImage = []
 
 
     def ImageProcessingBeforeTesseract(self):
@@ -22,6 +22,16 @@ class Controller():
         for image in self.images:
             pass #call testing funcs from "modelTesseract"
 
+
+    def processScannedImages(self):
+        for image in self.images:
+            if image.isHandwrite:
+
+
     def PrintExtractText(self):
         for text in self.text_in_images:
             print (text)
+
+
+    def main(self):
+        pass

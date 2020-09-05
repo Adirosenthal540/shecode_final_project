@@ -3,6 +3,23 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 import sys
 
+PIXEL_REMOVE = 20
+THRESHOLDTIGHT = 0.75
+MINHIGHTLETTER = 20 # MIN PIXEL NUM FOR LETTER \ LINE
+
+def reorder(myPoints):
+    myPoints = myPoints.reshape((4, 2))
+    myPointsNew = np.zeros((4, 1, 2), dtype=np.int32)
+    add = myPoints.sum(1)
+
+    myPointsNew[0] = myPoints[np.argmin(add)]
+    myPointsNew[3] = myPoints[np.argmax(add)]
+    diff = np.diff(myPoints, axis=1)
+    myPointsNew[1] = myPoints[np.argmin(diff)]
+    myPointsNew[2] = myPoints[np.argmax(diff)]
+
+    return myPointsNew
+
 class Image():
 
     def __init__(self, imageArray, isTrain = False, isHandwrite = False, label = -1):
@@ -38,28 +55,23 @@ class Image():
         self.processes.append("resizeImage")
         return resizeImg
 
-
-    WIDTH = 700
-    HEIGHT = 800
-    PIXEL_REMOVE = 20
-
     def RotateImage(self):
         pass
 
-    def removePixelsEdge(self, img, numIdex):
+    def removePixelsEdge(self, img, numPixel):
         widthImg = img.shape[1]
         heightImg = img.shape[0]
-        imgRemovePixels = img[numIdex:heightImg - numIdex, numIdex:widthImg - numIdex]
+        imgRemovePixels = img[numPixel:heightImg - numPixel, numPixel:widthImg - numPixel]
         imgResize = cv.resize(imgRemovePixels, (widthImg, heightImg))
+        self.imageArrays["removePixelsEdge"] = imgResize
+        self.processes.append("removePixelsEdge")
         return imgResize
 
     def FindLines(self, img):
         edges = cv.Canny(img, 50, 150, apertureSize=3)
-        #edges = cv.Canny(gray, 50, 150, apertureSize=3)
-        cv.imshow("edges",edges)
+        cv.imshow("edges", edges)
         cv.waitKey(0)
         lines = cv.HoughLinesP(edges,1,np.pi/180, 100, minLineLength=300, maxLineGap=20)
-
         for line in lines:
             x1, y1, x2, y2 = line[0]
             cv.line(img, (x1, y1), (x2, y2), (0,255, 0), 2)
@@ -68,40 +80,7 @@ class Image():
         cv.waitKey(0)
         cv.destroyAllWindows()
 
-    def click_event(event, x, y, flags, param):
-        if event == cv.EVENT_LBUTTONDOWN:
-            cv.circle(img, (x,y), 3, (0,0,255), -1)
-            points.append((x,y))
-            if len(points) >= 2:
-                cv.line(img, points[-1], points[-2], (255,0,0), 5)
-            cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-
-    def selectTextArea(img, points):
-        cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-        cv.setMouseCallback("Select_area_of_text-need_to_be_a_square", click_event)
-        cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-        cv.waitKey()
-        cv.destroyAllWindows()
-        if len(points)<4:
-            print( "ERROR - YOU NEED TO DROW SQUARE")
-            sys.exit()
-        points = np.array(points[0:4])
-        return points
-
-    def reorder(myPoints):
-        myPoints = myPoints.reshape((4, 2))
-        myPointsNew = np.zeros((4, 1, 2), dtype=np.int32)
-        add = myPoints.sum(1)
-
-        myPointsNew[0] = myPoints[np.argmin(add)]
-        myPointsNew[3] = myPoints[np.argmax(add)]
-        diff = np.diff(myPoints, axis=1)
-        myPointsNew[1] = myPoints[np.argmin(diff)]
-        myPointsNew[2] = myPoints[np.argmax(diff)]
-
-        return myPointsNew
-
-    def WropImag(img, points):
+    def WropImage(self, img, points):
         imgContour = img.copy()
         points = reorder(points)
         width = img.shape[1]
@@ -110,28 +89,132 @@ class Image():
         pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])  # PREPARE POINTS FOR WARP
         matrix = cv.getPerspectiveTransform(pts1, pts2)
         imgWarp = cv.warpPerspective(img, matrix, (width, height))
-        imgWarp = removePixelsEdge(imgWarp, PIXEL_REMOVE)
+        imgWarp = self.removePixelsEdge(imgWarp, PIXEL_REMOVE)
         cv.imshow("wrop Image", imgWarp)
-        cv.waitKey(0)
+        cv.waitKey(5)
+        self.imageArrays["wropImage"] = imgWarp
+        self.processes.append("wropImage")
         return imgWarp
 
-    def main():
-        global points
-        points=[]
-        img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\unnamed1.jpg", -1)
-        image = Image(img)
+    def GetLineBounds(self, img):
+        lineBounds = []
+        maxValImage = np.amax(img, axis=1)
+        smallThanTHRESHOLDTIGHT = maxValImage < THRESHOLDTIGHT
+        row = 1
+        startL = 0
+        endL = 0
+        imgCopy = img.copy()
+        while row < self.ImageHeight(img):
+            while smallThanTHRESHOLDTIGHT[row]:
+                if smallThanTHRESHOLDTIGHT[row - 1] == False:
+                    startL = row
+                if smallThanTHRESHOLDTIGHT[row + 1] == False:
+                    endL = row
+                row += 1
 
-        image.resize(int((WIDTH / image.ImageWidth())*image.ImageWidth()), int((WIDTH / image.ImageWidth())*image.ImageHeight()))
-        img = image.CopyImageArray()
-        points = selectTextArea(img, points)
+            if endL - startL <= MINHIGHTLETTER:
+                row += 1
+                continue
+            else:
+                lineBounds.append((startL, endL))
+            row += 1
+        cv.line(imgeSelectEdge, points[-1], points[-2], (255, 0, 0), 5)
+        return lineBounds
 
-        print (type(image))
-        print(image.ImageHeight())
-        print(image.ImageWidth())
-        imgWarp = WropImag(img, points)
-        print(points)
-        # img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\test_tesseract.png", 0)
-        #
-        # cv.imshow("image",img)
-        # cv.waitKey(0)
-        # FindLines(img)
+
+
+"""
+        def LetterNumbers(pagenumber = 0):
+            letter = []
+            if pagenumber == 0:
+                j = 0;
+                for i in range(52, 68):
+                    letter[j] = i
+                    j++
+            elif pagenumber == 1:
+                j = 0;
+                for (int i = 68; i <= 78; i++)
+                {
+                    letter[j] = i;
+                j + +;
+
+                }
+                for (int i = 25; i >= 21; i--)
+                    {
+
+                        letter[j] = i;
+                    j + +;
+                    }
+                    break;
+                }
+                case
+                2:
+                {
+                int
+                j = 0;
+                for (int i = 20; i >= 5; i--)
+                    {
+                        letter[j] = i;
+                    j + +;
+
+                    }
+                    break;
+                }
+                case
+                3:
+                {
+                int
+                j = 0;
+                for (int i = 4; i >= 0; i--)
+                    {
+
+                        letter[j] = i;
+                    j + +;
+                    }
+                    for (int i = 51; i >= 41; i--)
+                        {
+
+                            letter[j] = i;
+                        j + +;
+                        }
+                        break;
+                        }
+                        case
+                        4:
+                        {
+                        int
+                        j = 0;
+                        for (int i = 40; i >= 26; i--)
+                            {
+
+                                letter[j] = i;
+                            j + +;
+                            }
+                            for (int i = 79; i <= 79; i++)
+                                {
+
+                                    letter[j] = i;
+                                j + +;
+                                }
+                                break;
+                                }
+                                case
+                                5:
+                                {
+                                int
+                                j = 0;
+                                for (int i = 80; i <= 95; i++)
+                                    {
+
+                                        letter[j] = i;
+                                    j + +;
+                                    }
+                                    break;
+                                    }
+
+                                    }
+                                    ret
+
+"""
+
+
