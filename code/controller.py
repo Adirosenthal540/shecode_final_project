@@ -36,4 +36,4 @@ class Controller():
 
     def main(self):
         for image in self.images:
-            image.GetLineBounds(image.imageArrays["original"])
+            letterBounds = image.GetLetterBoundsInLine(image.imageArrays["original"])

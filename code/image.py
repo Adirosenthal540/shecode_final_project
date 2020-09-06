@@ -5,7 +5,7 @@ import sys
 
 PIXEL_REMOVE = 20
 THRESHOLDTIGHT = 110
-MINHIGHTLETTER = 10 # MIN PIXEL NUM FOR LETTER \ LINE
+MINPIXELLETTER = 10 # MIN PIXEL NUM FOR LETTER \ LINE
 
 def reorder(myPoints):
     myPoints = myPoints.reshape((4, 2))
@@ -112,7 +112,7 @@ class Image():
                     endL = row
                 row += 1
             if (smallThanTHRESHOLDTIGHT[row - 1] == True):
-                if endL - startL <= MINHIGHTLETTER:
+                if endL - startL <= MINPIXELLETTER:
                     row += 1
                     continue
                 else:
@@ -126,100 +126,62 @@ class Image():
 
         return lineBounds
 
+    def FindLetterBoundsInLine(self,img, startLine, endLine):
+        letterBounds = []
+        img_cut = img[startLine : endLine, 0 : self.ImageWidth(img)]
+        minValImage = np.amin(img_cut, axis=0)
+        smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
+        column = 1
+        startLetter = 0
+        endLetter = 0
+        imgCopy = img.copy()
+        while column < self.ImageWidth(img):
+            while smallThanTHRESHOLDTIGHT[column]:
+                if smallThanTHRESHOLDTIGHT[column - 1] == False:
+                    startLetter = column
+                if smallThanTHRESHOLDTIGHT[column + 1] == False:
+                    endLetter = column
+                    column += 1
+            if (smallThanTHRESHOLDTIGHT[column - 1] == True):
+                if endLetter - startLetter <= MINPIXELLETTER:
+                    column += 1
+                    continue
+                else:
+                    letterBounds.append([(startLetter, startLine), (endLetter,endLine)])
+                    cv.line(imgCopy, (startLetter, startLine), (startLetter, endLine), 0, 5)
+                    cv.line(imgCopy, (endLetter, startLine), (endLetter, endLine), 0, 5)
+                    cv.line(imgCopy, (startLetter, startLine), (endLetter, startLine), 0, 5)
+                    cv.line(imgCopy, (startLetter, endLine), (endLetter, endLine), 0, 5)
+            column += 1
+        cv.imshow("line bounds image", imgCopy)
+        cv.waitKey(0)
+        return letterBounds
+
+    def GetLetterBoundsInLine(self, img):
+        lineBounds = self.GetLineBounds(img)
+        letterBounds = []
+        for lineBound in lineBounds:
+            currentLineLetterBounds = self.FindLetterBoundsInLine(img, lineBound[[0]], lineBound[1])
+            letterBounds. append(currentLineLetterBounds)
+        return letterBounds
 
 
-"""
-        def LetterNumbers(pagenumber = 0):
-            letter = []
-            if pagenumber == 0:
-                j = 0;
-                for i in range(52, 68):
-                    letter[j] = i
-                    j++
-            elif pagenumber == 1:
-                j = 0;
-                for (int i = 68; i <= 78; i++)
-                {
-                    letter[j] = i;
-                j + +;
+    def FindSquares(self, img):
+        imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        _, thresh = cv.threshold(imgray, 0, 255, cv.THRESH_BINARY)
+        squareBounds = []
+        contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
+        print(len(contours))
+        for contuor in contours:
+            # algorithem to reduce number of vertexes
+            approx = cv.approxPolyDP(contuor, 0.01 * cv.arcLength(contuor, True), True)
 
-                }
-                for (int i = 25; i >= 21; i--)
-                    {
+            if len(approx) == 4 and abs(approx[2][0][0] - approx[1][0][0]) < imgray.shape[0] - 10:
+                cv.drawContours(img, [approx], -1, (0, 0, 255), 5)
+                squareBounds.append(([list(approx[0][0]), list(approx[1][0]), list(approx[2][0]), list(approx[3][0])]))
 
-                        letter[j] = i;
-                    j + +;
-                    }
-                    break;
-                }
-                case
-                2:
-                {
-                int
-                j = 0;
-                for (int i = 20; i >= 5; i--)
-                    {
-                        letter[j] = i;
-                    j + +;
-
-                    }
-                    break;
-                }
-                case
-                3:
-                {
-                int
-                j = 0;
-                for (int i = 4; i >= 0; i--)
-                    {
-
-                        letter[j] = i;
-                    j + +;
-                    }
-                    for (int i = 51; i >= 41; i--)
-                        {
-
-                            letter[j] = i;
-                        j + +;
-                        }
-                        break;
-                        }
-                        case
-                        4:
-                        {
-                        int
-                        j = 0;
-                        for (int i = 40; i >= 26; i--)
-                            {
-
-                                letter[j] = i;
-                            j + +;
-                            }
-                            for (int i = 79; i <= 79; i++)
-                                {
-
-                                    letter[j] = i;
-                                j + +;
-                                }
-                                break;
-                                }
-                                case
-                                5:
-                                {
-                                int
-                                j = 0;
-                                for (int i = 80; i <= 95; i++)
-                                    {
-
-                                        letter[j] = i;
-                                    j + +;
-                                    }
-                                    break;
-                                    }
-
-                                    }
-                                    ret
-
-"""
-
-
+        cv.imshow("shapes", img)
+        cv.waitKey(0)
+        print(squareBounds)
+        print(len(squareBounds))
+        return squareBounds

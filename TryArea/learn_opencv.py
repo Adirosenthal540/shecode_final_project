@@ -1,26 +1,90 @@
-import cv2 as cv
+import cv2
+import pytesseract
 import numpy as np
-from matplotlib import pyplot as plt
+# img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture2.PNG")
+#
+# h, w, c = img.shape
+# boxes = pytesseract.image_to_boxes(img, lang="heb")
+# print(boxes)
+# for b in boxes.splitlines():
+#     b = b.split(' ')
+#     img = cv2.rectangle(img, (int(b[1]), h - int(b[2])), (int(b[3]), h - int(b[4])), (0, 255, 0), 2)
+#
+# cv2.imshow('img', img)
+# cv2.waitKey(0)
+# #import cv2 as cv
+# import cv2
+# import numpy as np
+# from matplotlib import pyplot as plt
+#
+# # Load image as grayscale and crop ROI
+# large = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture15.PNG")
+#
+#
+# #large = cv2.imread('1.jpg')
+# rgb = cv2.pyrDown(large)
+# small = cv2.cvtColor(rgb, cv2.COLOR_BGR2GRAY)
+#
+# kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+# grad = cv2.morphologyEx(small, cv2.MORPH_GRADIENT, kernel)
+#
+# _, bw = cv2.threshold(grad, 0.0, 255.0, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+# cv2.imshow('th1', bw)
+# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 1))
+# connected = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel)
+# # using RETR_EXTERNAL instead of RETR_CCOMP
+# contours, hierarchy = cv2.findContours(connected.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+# #For opencv 3+ comment the previous line and uncomment the following line
+# #_, contours, hierarchy = cv2.findContours(connected.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+#
+# mask = np.zeros(bw.shape, dtype=np.uint8)
+#
+# for idx in range(len(contours)):
+#     x, y, w, h = cv2.boundingRect(contours[idx])
+#     mask[y:y+h, x:x+w] = 0
+#     cv2.drawContours(mask, contours, idx, (255, 255, 255), -1)
+#     r = float(cv2.countNonZero(mask[y:y+h, x:x+w])) / (w * h)
+#
+#     if r > 0.45 and w > 8 and h > 8:
+#         cv2.rectangle(rgb, (x, y), (x+w-1, y+h-1), (0, 255, 0), 2)
+# cv2.imshow('mask', mask)
+# cv2.imshow('rects', rgb)
+# cv2.waitKey()
+# x, y, w, h = 364, 633, 791, 273
+# ROI = image[y:y+h, x:x+w]
 
-def click_event(event, x, y, flags, param):
-    if event ==cv.EVENT_LBUTTONDOWN:
-        cv.circle(img, (x,y), 3, (0,0,255), -1)
-        points.append((x,y))
-        if len(points) >= 2:
-            cv.line(img, points[-1], points[-2], (255,0,0), 5)
-        cv.imshow("Image", img)
-img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\lena_learn_opencv.jpg", -1)
-#img = np.zeros((512,512,3), np.uint8)
-# print(img)
-# print(img.shape)
-# print(img.shape[0])
-cv.imshow("Image", img)
-points = []
-cv.setMouseCallback("Image", click_event)
-cv.waitKey()
-cv.destroyAllWindows()
-print(points)
+# Calculate mean and STD
+#mean, STD  = cv.meanStdDev(image)
 
+# Clip frame to lower and upper STD
+# offset = 0.2
+# clipped = np.clip(image, mean - offset*STD, mean + offset*STD).astype(np.uint8)
+
+# Normalize to range
+# result = cv.normalize(clipped, clipped, 0, 255, norm_type=cv.NORM_MINMAX)
+#
+# cv.imshow('image', image)
+# cv.imshow('result', result)
+# cv.waitKey()
+# def click_event(event, x, y, flags, param):
+#     if event ==cv.EVENT_LBUTTONDOWN:
+#         cv.circle(img, (x,y), 3, (0,0,255), -1)
+#         points.append((x,y))
+#         if len(points) >= 2:
+#             cv.line(img, points[-1], points[-2], (255,0,0), 5)
+#         cv.imshow("Image", img)
+# img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\lena_learn_opencv.jpg", -1)
+# #img = np.zeros((512,512,3), np.uint8)
+# # print(img)
+# # print(img.shape)
+# # print(img.shape[0])
+# cv.imshow("Image", img)
+# points = []
+# cv.setMouseCallback("Image", click_event)
+# cv.waitKey()
+# cv.destroyAllWindows()
+# print(points)
+#
 
 # img = np.zeros([512, 512], np.uint8)
 # font = cv.FONT_HERSHEY_SIMPLEX
@@ -40,16 +104,16 @@ print(points)
 # img = cv2.putText(img, "opencv", (10,500), font, 4 , (255,25,255), 10, cv2.LINE_AA)
 
 # img = cv.imread("test_images\gradient.png", 0)
-# _, th1 = cv.threshold(img, 127, 255, cv.THRESH_BINARY)
-# # _, th2 = cv.threshold(img, 127, 255, cv.THRESH_BINARY_INV)
-# # _, th3 = cv.threshold(img, 127, 255, cv.THRESH_TRUNC)
+# _, th1 = cv.threshold(image, 100, 255, cv.THRESH_BINARY)
+# _, th2 = cv.threshold(image, 100, 255, cv.THRESH_BINARY_INV)
+# _, th3 = cv.threshold(image, 100, 255, cv.THRESH_TRUNC)
 #
-# cv.imshow("image", img)
+# cv.imshow("image", image)
 # cv.imshow("th1", th1)
 # cv.imshow("th2", th2)
 # cv.imshow("th3", th3)
-# cv.imshow("th4", th4)
-#
+#cv.imshow("th4", th4)
+# cv.waitKey()
 # img = cv.imread("test_images\sudoku.png", 0)
 # th2 = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 11, 2 )
 # th3 = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2 )
@@ -153,42 +217,70 @@ print(points)
 #
 # # 5:15 find and drow contours
 #
-# img = cv.imread("test_images\\opencv-logo.png")
-# imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-# ret, thresh = cv.threshold(imgray, 127, 255, 0)
-# contours, hierarchy = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
+# img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture15.PNG")
+# imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# ret, thresh = cv2.threshold(imgray, 127, 255, 0)
+# contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
 # print("number of contuers:"+str(len(contours)))
+# print(contours)
+# cv2.drawContours(img, contours, -1, (0,255,0), 3)
 #
-# cv.drawContours(img, contours, -1, (0,255,0), 3)
-# cv.imshow("Image", img)
-# cv.imshow("Image GRAY", imgray)
+# cv2.imshow("Image", img)
+# cv2.imshow("Image GRAY", imgray)
 #
-# cv.waitKey(0)
-# cv.destroyAllWindows()
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
 
 #
 #
 # # 5:24 - basic motion detection
 #
-# # 5:44 - shape detection
-# img = cv.imread("test_images\\detect_blob.png")
-# imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-# _, thresh = cv.threshold(imgray, 0, 255, cv.THRESH_BINARY)
-#
-# contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
-# print(len(contours))
-# for contuor in contours:
-#   # algorithem to reduce number of vertexes
-#     approx = cv.approxPolyDP(contuor, 0.01*cv.arcLength(contuor, True), True)
-#     cv.drawContours(img, [approx], -1, (0,0,255), 5)
-#     x = approx.ravel()[0]
-#     y = approx.ravel()[1]
-#     if len(approx) == 4:
-#         cv.putText(img, "square", (x,y-10), cv.FONT_HERSHEY_COMPLEX, 0.5, (255,255,255,))
-#
-# cv.imshow("shapes", img)
-# cv.waitKey(0)
-#
+# 5:44 - shape detection
+def reorder(myPoints):
+    myPoints = myPoints.reshape((4, 2))
+    myPointsNew = np.zeros((4, 1,2), dtype=np.int32)
+    add = myPoints.sum(1)
+    a = myPoints[np.argmin(add)]
+    myPointsNew[0] = a
+    myPointsNew[3] = myPoints[np.argmax(add)]
+    diff = np.diff(myPoints, axis=1)
+    myPointsNew[1] = myPoints[np.argmin(diff)]
+    myPointsNew[2] = myPoints[np.argmax(diff)]
+
+    return myPointsNew
+
+img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture22.PNG")
+imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+_, thresh = cv2.threshold(imgray, 0, 255, cv2.THRESH_BINARY)
+squareBounds = []
+contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+print(len(contours))
+imgcopy = img.copy()
+for contuor in contours:
+  # algorithem to reduce number of vertexes
+    approx = cv2.approxPolyDP(contuor, 0.01*cv2.arcLength(contuor, True), True)
+  #remove duplicate and the image's frame sqare
+    if len(approx) == 4:
+    # if len(approx) == 4 and abs(approx[2][0][0]-approx[1][0][0])<imgray.shape[0]-10 and abs(approx[0][0][0]-approx[1][0][0])<10:
+        #bound = np.array([(list(approx[0][0]), list(approx[1][0])), (list(approx[2][0]), list(approx[3][0]))])
+        #
+        bound =reorder(approx)
+        myPoints = bound.reshape((4, 2))
+        diff = myPoints[3]-myPoints[0]
+        if diff [0] < imgcopy.shape[1]/2 and diff[0]>2 and diff [1] < imgcopy.shape[0]/2 and diff[1]>2:
+            cv2.drawContours(imgcopy, [approx], -1, (0, 0,255), 2)
+            squareBounds.append(bound)
+
+cv2.imshow("shapes", imgcopy)
+cv2.waitKey(0)
+print(len(squareBounds))
+print(squareBounds)
+for squareBound in squareBounds:
+    img_cut = imgray[min(squareBound[0][0][1], squareBound[1][0][1]):max(squareBound[2][0][1], squareBound[3][0][1]), min(squareBound[0][0][0],squareBound[2][0][0]):max(squareBound[1][0][0],squareBound[3][0][0])]
+    #resizeImg = cv2.resize(img_cut, (imgray.shape[1], imgray.shape[0]))
+    if pytesseract.image_to_string(img_cut, lang="heb")!="":
+        cv2.imshow("shapes", img_cut)
+        cv2.waitKey(0)
 # # 6:01 - histogram
 #
 # # 6:18 tamplate matchine - search for elements
