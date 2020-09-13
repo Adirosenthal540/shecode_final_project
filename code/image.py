@@ -166,22 +166,3 @@ class Image():
         return letterBounds
 
 
-    def FindSquares(self, img):
-        imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        _, thresh = cv.threshold(imgray, 0, 255, cv.THRESH_BINARY)
-        squareBounds = []
-        contours, _ = cv.findContours(thresh, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
-        print(len(contours))
-        for contuor in contours:
-            # algorithem to reduce number of vertexes
-            approx = cv.approxPolyDP(contuor, 0.01 * cv.arcLength(contuor, True), True)
-
-            if len(approx) == 4 and abs(approx[2][0][0] - approx[1][0][0]) < imgray.shape[0] - 10:
-                cv.drawContours(img, [approx], -1, (0, 0, 255), 5)
-                squareBounds.append(([list(approx[0][0]), list(approx[1][0]), list(approx[2][0]), list(approx[3][0])]))
-
-        cv.imshow("shapes", img)
-        cv.waitKey(0)
-        print(squareBounds)
-        print(len(squareBounds))
-        return squareBounds
