@@ -1,5 +1,5 @@
 from Controller import Controller
-from Image import Image
+from PIL import Image
 import cv2 as cv
 import sys
 import numpy as np
@@ -121,6 +121,7 @@ def AskLabeledImagesAndTextFiles():
         text= txt_file.read()
         txtFiles.append(text)
         txt_file.close()
+        print(txtFiles)
         image = Image(cv.imread(imagesInFolder[i], 0), isTrain = True, label = txtFiles[i])
         setBorderOfText(answer, image)
         images.append(image)

@@ -1,6 +1,11 @@
 import cv2
 import pytesseract
 import numpy as np
+from numpy import asarray
+from PIL import Image
+
+from matplotlib import pyplot as plt
+
 # img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture2.PNG")
 #
 # h, w, c = img.shape
@@ -98,13 +103,13 @@ import numpy as np
 #
 # cv.waitKey(0)
 # cv.destroyAllWindows()
-
-#cv2.imwrite("lena_copy.png", img)
+#
+# cv2.imwrite(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\lena_copy.png")
 # font = cv2.FONT_HERSHEY_SIMPLEX
-# img = cv2.putText(img, "opencv", (10,500), font, 4 , (255,25,255), 10, cv2.LINE_AA)
-
-# img = cv.imread("test_images\gradient.png", 0)
-# _, th1 = cv.threshold(image, 100, 255, cv.THRESH_BINARY)
+# #img = cv2.putText(img, "opencv", (10,500), font, 4 , (255,25,255), 10, cv2.LINE_AA)
+#
+# img = cv2.imread("test_images\gradient.png", 0)
+# _, th1 = cv2.threshold(image, 100, 255, cv.THRESH_BINARY)
 # _, th2 = cv.threshold(image, 100, 255, cv.THRESH_BINARY_INV)
 # _, th3 = cv.threshold(image, 100, 255, cv.THRESH_TRUNC)
 #
@@ -112,15 +117,15 @@ import numpy as np
 # cv.imshow("th1", th1)
 # cv.imshow("th2", th2)
 # cv.imshow("th3", th3)
-#cv.imshow("th4", th4)
+# cv.imshow("th4", th4)
 # cv.waitKey()
-# img = cv.imread("test_images\sudoku.png", 0)
-# th2 = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 11, 2 )
-# th3 = cv.adaptiveThreshold(img, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 11, 2 )
+# img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\handwritte\image_handwrite_page1.jfif", 0)
+# th2 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2 )
+# th3 = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2 )
 #
-# cv.imshow("image", img)
-# cv.imshow("th2", th2)
-# cv.imshow("th3", th3)
+# cv2.imshow("image", img)
+# cv2.imshow("th2", th2)
+# cv2.imshow("th3", th3)
 
 # # ~learn how to clean noises in image~
 # img = cv.imread("test_images\smarties.png", cv.IMREAD_GRAYSCALE)
@@ -174,21 +179,21 @@ import numpy as np
 
 # # 4:11 - image gradient
 #
-# # img = cv.imread("test_images\\sudoku.png", cv.IMREAD_GRAYSCALE)
-# img = cv.imread("test_images\\messi5.jpg", cv.IMREAD_GRAYSCALE)
+# img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\handwritte\image_handwrite_page1.jfif", cv2.IMREAD_GRAYSCALE)
+# #img = cv2.imread("test_images\\messi5.jpg", cv2.IMREAD_GRAYSCALE)
 # # we cam add ksize(=3)
-# lap = cv.Laplacian(img, cv.CV_64F)
+# lap = cv2.Laplacian(img, cv2.CV_64F)
 # lap = np.uint8(np.absolute(lap))
-# sobelX = cv.Sobel(img, cv.CV_64F, 1, 0)
-# sobelY = cv.Sobel(img, cv.CV_64F, 0, 1)
+# sobelX = cv2.Sobel(img, cv2.CV_64F, 1, 0)
+# sobelY = cv2.Sobel(img, cv2.CV_64F, 0, 1)
 # # Canny edge detector
-# edges = cv.Canny(img, 100, 200)
+# edges = cv2.Canny(img, 100, 200)
 #
 # sobelX= np.uint8(np.absolute(sobelX))
 # sobelY= np.uint8(np.absolute(sobelY))
 #
 # # combain sobelX and sobelY
-# sobelCombain = cv.bitwise_or(sobelX, sobelY)
+# sobelCombain = cv2.bitwise_or(sobelX, sobelY)
 #
 # titles = ["image", "Laplacian", "sobelX", "sobelY", "sobelCombain", "edges"]
 # images = [img, lap, sobelX, sobelY, sobelCombain, edges]
@@ -198,8 +203,8 @@ import numpy as np
 #     plt.title(titles[i])
 #     plt.xticks([]), plt.yticks([])
 # plt.show()
-
-# # 4:32 - image pyramids
+#
+# # # 4:32 - image pyramids
 #
 # img = cv.imread("test_images\\lena_learn_opencv.jpg")
 # lr = cv.pyrDown(img)
@@ -232,62 +237,189 @@ import numpy as np
 # cv2.destroyAllWindows()
 
 #
-#
-# # 5:24 - basic motion detection
-#
-# 5:44 - shape detection
-def reorder(myPoints):
-    myPoints = myPoints.reshape((4, 2))
-    myPointsNew = np.zeros((4, 1,2), dtype=np.int32)
-    add = myPoints.sum(1)
-    a = myPoints[np.argmin(add)]
-    myPointsNew[0] = a
-    myPointsNew[3] = myPoints[np.argmax(add)]
-    diff = np.diff(myPoints, axis=1)
-    myPointsNew[1] = myPoints[np.argmin(diff)]
-    myPointsNew[2] = myPoints[np.argmax(diff)]
+import cv2
+import numpy as np
 
-    return myPointsNew
 
-img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture22.PNG")
-imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-_, thresh = cv2.threshold(imgray, 0, 255, cv2.THRESH_BINARY)
-squareBounds = []
-contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-print(len(contours))
-imgcopy = img.copy()
-for contuor in contours:
-  # algorithem to reduce number of vertexes
-    approx = cv2.approxPolyDP(contuor, 0.01*cv2.arcLength(contuor, True), True)
-  #remove duplicate and the image's frame sqare
-    if len(approx) == 4:
-    # if len(approx) == 4 and abs(approx[2][0][0]-approx[1][0][0])<imgray.shape[0]-10 and abs(approx[0][0][0]-approx[1][0][0])<10:
-        #bound = np.array([(list(approx[0][0]), list(approx[1][0])), (list(approx[2][0]), list(approx[3][0]))])
-        #
-        bound =reorder(approx)
-        myPoints = bound.reshape((4, 2))
-        diff = myPoints[3]-myPoints[0]
-        if diff [0] < imgcopy.shape[1]/2 and diff[0]>2 and diff [1] < imgcopy.shape[0]/2 and diff[1]>2:
-            cv2.drawContours(imgcopy, [approx], -1, (0, 0,255), 2)
-            squareBounds.append(bound)
+def createLableForPageAndLine():
+    dic = {}
+    for page in range(1,5):
+        if page == 1:
+            line = 0
+            while line < 10:
+                dic[(page, line)] = chr(1488 + line)  # א - י
+                line += 1
+            dic[(page, 10)] = chr(1499)  # כ
+            dic[(page, 11)] = chr(1500)  # ל
+            dic[(page, 12)] = chr(1502)  # מ
+            dic[(page, 13)] = chr(1504)  # נ
+        elif page == 2:
+            dic[(page, 0)] = chr(1505)  # ס
+            dic[(page, 1)] = chr(1506)  # ע
+            dic[(page, 2)] = chr(1508)  # פ
+            dic[(page, 3)] = chr(1510)  # צ
+            dic[(page, 4)] = chr(1511)  # ק
+            dic[(page, 5)] = chr(1512)  # ר
+            dic[(page, 6)] = chr(1513)  # ש
+            dic[(page, 7)] = chr(1514)  # ת
+            dic[(page, 8)] = chr(1498)  # ך
+            dic[(page, 9)] = chr(1501)  # ם
+            dic[(page, 10)] = chr(1503)  # ן
+            dic[(page, 11)] = chr(1507)  # ף
+            dic[(page, 12)] = chr(1509)  # ץ
+            dic[(page, 13)] = chr(49)  # 1
+        elif page == 3:
+            line = 0
+            for i in range(8):
+                dic[(page, line)] = chr(50 + line)  # 2-9
+                line += 1
+            dic[(page, 8)] = chr(48)  # 0
+            dic[(page, 9)] = chr(37)  # %
+            dic[(page, 10)] = chr(64)  # @
+            dic[(page, 11)] = chr(33)  # !
+            dic[(page, 12)] = chr(93)  # ]
+            dic[(page, 13)] = chr(91)  # [
+        elif page == 4:
+            dic[(page, 0)] = chr(125)  # }
+            dic[(page, 1)] = chr(123)  # {
+            dic[(page, 2)] = chr(58)  # :
+            dic[(page, 3)] = chr(63)  # ?
+            dic[(page, 4)] = chr(34)  # "
+            dic[(page, 5)] = chr(59)  # ;
+            dic[(page, 6)] = chr(92)  # \
+            dic[(page, 7)] = chr(45)  # -
+    return dic
 
-cv2.imshow("shapes", imgcopy)
+
+image = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\types-of-uml-diagrams-table.png")
+
+
+image = cv2.resize(image, (600, 800))
+
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#blur = cv2.medianBlur(gray, 5)
+#edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+cv2.imshow("Image GRAY", image)
 cv2.waitKey(0)
-print(len(squareBounds))
-print(squareBounds)
-for squareBound in squareBounds:
-    img_cut = imgray[min(squareBound[0][0][1], squareBound[1][0][1]):max(squareBound[2][0][1], squareBound[3][0][1]), min(squareBound[0][0][0],squareBound[2][0][0]):max(squareBound[1][0][0],squareBound[3][0][0])]
-    #resizeImg = cv2.resize(img_cut, (imgray.shape[1], imgray.shape[0]))
-    if pytesseract.image_to_string(img_cut, lang="heb")!="":
-        cv2.imshow("shapes", img_cut)
-        cv2.waitKey(0)
-# # 6:01 - histogram
+# thresh = cv2.threshold(gray,160,255, cv2.THRESH_BINARY_INV)[1]
+
+mean = gray.mean()
+std = gray.std()
+# thresh = cv.threshold(gray, 160, 255, cv.THRESH_BINARY_INV)[1]
+thresh = cv2.threshold(gray, 255 - mean + 0.5*std, 255, cv2.THRESH_BINARY_INV)[1]
+#kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+#close = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
+cv2.imshow("Image GRAY", thresh)
+cv2.waitKey(0)
+
+# blur = cv2.medianBlur(gray, 5)
+# sharpen_kernel = np.array([[-1,-1,-1], [-1,9,-1], [-1,-1,-1]])
+# sharpen = cv2.filter2D(blur, -1, sharpen_kernel)
 #
-# # 6:18 tamplate matchine - search for elements
+# thresh = cv2.threshold(sharpen,160,255, cv2.THRESH_BINARY_INV)[1]
+# kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
+# close = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel, iterations=2)
+cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+print(cnts)
+cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+image_copy = image.copy()
+min_area = (image.shape[1]/18)*image.shape[1]/18
+print(image.shape[1]/16)
+print(image.shape[1]/12)
+max_area = (image.shape[1]/10)*image.shape[1]/10
+boundries = []
+for c in cnts:
+    area = cv2.contourArea(c)
+
+    if area > min_area and area < max_area:
+        x,y,w,h = cv2.boundingRect(c)
+        x, y, w, h = cv2.boundingRect(c)
+        fixW = int(w * 0.15)
+        fixh = int(h * 0.15)
+        x = x + fixW
+        y = y + fixh
+        w = w - fixW*2
+        h = h - fixh*2
+        boundries.append((x,y,w,h))
+        ROI = image[y:y+h, x:x+h]
+        #cv2.imwrite('ROI_{}.png'.format(image_number), ROI)
+        cv2.rectangle(image_copy, (x, y), (x + w, y + h), (36,255,12), 2)
+cv2.imshow("Image with sqares", image_copy)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+MAXNUMLINES = 14
+print(boundries)
+print(len(boundries))
+boundries = np.array(boundries)
+dic = createLableForPageAndLine()
+yMin = min(boundries[:, 1])
+yMax = max(boundries[:, 1] + boundries[:, 3])
+heightLine = int((yMax - yMin) / MAXNUMLINES)
+for bound in boundries:
+    yMiddleBorder = bound[1] + bound[3] * 0.5
+    for line in range(MAXNUMLINES+1):
+        if (yMin + heightLine * line) <= yMiddleBorder and (yMin + heightLine * (line+1)) > yMiddleBorder:
+            print (dic[(1, line)])
+            print(line+1)
+            img_cut = image[bound[1]:bound[1]+bound[3],bound[0]:bound[0]+bound[2]]
+            cv2.imshow('img_cut', img_cut)
+            cv2.waitKey()
+
+# # 5:24 - basic motion detection
+
+# 5:44 - shape detection
+# def reorder(myPoints):
+#     myPoints = myPoints.reshape((4, 2))
+#     myPointsNew = np.zeros((4, 1,2), dtype=np.int32)
+#     add = myPoints.sum(1)
+#     a = myPoints[np.argmin(add)]
+#     myPointsNew[0] = a
+#     myPointsNew[3] = myPoints[np.argmax(add)]
+#     diff = np.diff(myPoints, axis=1)
+#     myPointsNew[1] = myPoints[np.argmin(diff)]
+#     myPointsNew[2] = myPoints[np.argmax(diff)]
 #
-# img = cv.imread("test_images\\messi5.jpg")
+#     return myPointsNew
+#
+# img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture22.PNG")
+# imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# _, thresh = cv2.threshold(imgray, 0, 255, cv2.THRESH_BINARY)
+# squareBounds = []
+# contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+# print(len(contours))
+# imgcopy = img.copy()
+# for contuor in contours:
+#     # algorithem to reduce number of vertexes
+#     approx = cv2.approxPolyDP(contuor, 0.02*cv2.arcLength(contuor, True), True)
+#     #remove duplicate and the image's frame sqare
+#     if len(approx) == 4:
+#         (x, y, w, h) = cv2.boundingRect(approx)
+#         ar = w / float(h)
+#
+#         if (ar >= 0.95 and ar <= 1.05):
+#             bound = reorder(approx)
+#             if w < imgcopy.shape[1] / 2 and w > 2 :
+#                 cv2.drawContours(imgcopy, [approx], -1, (0, 0, 255), 2)
+#                 squareBounds.append(bound)
+#
+#
+# cv2.imshow("shapes", imgcopy)
+# cv2.waitKey(0)
+# print(len(squareBounds))
+# print(squareBounds)
+# for squareBound in squareBounds:
+#     img_cut = imgray[min(squareBound[0][0][1], squareBound[1][0][1]):max(squareBound[2][0][1], squareBound[3][0][1]), min(squareBound[0][0][0],squareBound[2][0][0]):max(squareBound[1][0][0],squareBound[3][0][0])]
+#     #resizeImg = cv2.resize(img_cut, (imgray.shape[1], imgray.shape[0]))
+#     if pytesseract.image_to_string(img_cut, lang="heb")!="":
+#         cv2.imshow("shapes", img_cut)
+#         cv2.waitKey(0)
+# 6:01 - histogram
+
+# 6:18 tamplate matchine - search for elements
+#
+# img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\messi5.jpg")
 # imgray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-# template = cv.imread("test_images\\messi_face.jpg", 0)
+# template = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\messi_face.jpg", 0)
 # w, h = template.shape[::-1]
 #
 # res = cv.matchTemplate(imgray, template, cv.TM_CCOEFF_NORMED)
@@ -301,9 +433,9 @@ for squareBound in squareBounds:
 # cv.imshow("image", img)
 # cv.waitKey(0)
 # cv.destroyAllWindows()
-
+#
 # # probabilistic hough line transform
-# img = cv.imread("test_images\\test_tesseract.png", 0)
+# img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture15.PNG", 0)
 # #gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 # cv.imshow("image",img)
 # cv.waitKey(0)
@@ -320,9 +452,9 @@ for squareBound in squareBounds:
 # cv.imshow("image", img)
 # cv.waitKey(0)
 # cv.destroyAllWindows()
-
+#
 # # probabilistic hough circle transform
-# img = cv.imread("test_images\\smarties.png")
+# img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\smarties.png")
 # output = img.copy()
 # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 # gray = cv.medianBlur(gray, 5)
