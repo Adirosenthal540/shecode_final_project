@@ -294,6 +294,7 @@ def createLableForPageAndLine():
 image = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\types-of-uml-diagrams-table.png")
 
 
+
 image = cv2.resize(image, (600, 800))
 
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
