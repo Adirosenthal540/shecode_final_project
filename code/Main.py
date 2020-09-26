@@ -1,13 +1,17 @@
 from Controller import Controller
-from PIL import Image
+from ImageProcessing import ImageProcessing
+from HandwrittenDoc import check_PDF_name
 import cv2 as cv
+from PIL import Image
 import sys
 import numpy as np
 from matplotlib import pyplot as plt
 import os
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image.exceptions import PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError
+
 INPUT_NUM_TRYS = 2
+POPPLER_PATH = "C:\\poppler-20.09.0\\bin"
 
 
 def click_event(event, x, y, flags, param):
@@ -35,14 +39,12 @@ def selectTextArea(img):
     return points
 
 
-def setBorderOfText(answer, image):
+def setBorderOfText(image):
     global points
     points= []
-    if (answer):
-
-        print("Select the edegs of the scanned documents (with 4 points) and close the image's frame ")
-        points = selectTextArea(image.imageArrays["original"])
-        image.WropImage(image.imageArrays["original"], points)
+    print("Select the edegs of the scanned documents (with 4 points) and close the image's frame ")
+    points = selectTextArea(image.imageArray)
+    image.WropImage(image.imageArray, points)
 
 # the func get the "text" request for an input and the possibles values. It ask from the user an input and check if it is right.
 def get_input(text, posible_values):
@@ -64,13 +66,33 @@ def get_input(text, posible_values):
 
 # func check if the file is an image file:
 def CheckImage(file):
-    valid_images = [".jpg", ".gif", ".png"]
+    valid_images = [".jpg", ".gif", ".png", "tif", "tiff"]
     ext = os.path.splitext(file)[1]
     if ext.lower() not in valid_images:
         return False
     else:
         return True
 
+def CheckPDF(file):
+    ext = os.path.splitext(file)[1]
+    if ext.lower() =='pdf':
+        return True
+    else:
+        return False
+
+# The Image of the training will be extract to same path where it save
+def ExtractImagesFromPDF(file, files):
+    order = check_PDF_name(file)
+    images = convert_from_path(file, fmt="jpeg", poppler_path =POPPLER_PATH)
+    outputpath, namefile = os.path.split(file)
+    i = 0
+    for image in images:
+        # image = Image.open(im)
+        new_path_image = os.path.join(outputpath, namefile +"_"+ order[i] + ".tif")
+        i += 1
+        image.save(new_path_image, 'TIFF')
+        files.append(new_path_image)
+    return files
 
 # the func save all the paths of the images and text files(optional)
 # input: path of a folder,  is_txtFiles = true if want to find also text files
@@ -82,29 +104,35 @@ def Extract_files_from_folder(folder,  is_txtFiles=0):
     flag = 0
     for file in files:
         if (CheckImage(file) == False):
-            continue
+            if (CheckPDF(file) == True):
+                files = ExtractImagesFromPDF(file, files)
         if is_txtFiles:
             nameImage = os.path.splitext(file)[0]
-            if nameImage+".txt" in files:
+            if nameImage+".txt" in files :
                 txtFiles.append(os.path.join(folder, nameImage+".txt"))
+            elif nameImage+".gt.txt" in files:
+                txtFiles.append(os.path.join(folder, nameImage + ".gt.txt"))
             else:
                 print ("the image '" + file + "' has no .txt file")
                 continue
         imagesInFolder.append(os.path.join(folder, file))
-
     if (is_txtFiles):
         return imagesInFolder, txtFiles
     return imagesInFolder
 
 
-def AskImagesOfHandwriteTrain():
+def AskScannedImages():
     global images, points
-    folder = input("Enter the folder's path with all the images : \n").strip('"')
-    answer = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
+    folder = input("Enter the folder's path with all the images \ PDF : \n /"
+                   "***paid attention*** \n/"
+                   "Images - the image's names should be with the num of the page at the end (like: adi1.png, adi2.png...)/"
+                   " PDF - should write at the end the order of the pages number after bottom line (like: adi_312.pdf, adi_1234.pdf, adi_442311.pdf \n").strip('"')
+    markTextArea = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
     imagesInFolder = Extract_files_from_folder(folder)
     for imageInFolder in imagesInFolder:
-        image = Image(cv.imread(imageInFolder, 0), isTrain = True, isHandwrite = True)
-        setBorderOfText(answer, image)
+        image = ImageProcessing(cv.imread(imageInFolder, 0), imagePath = imageInFolder)
+        if (markTextArea):
+            setBorderOfText(image)
         images.append(image)
         return folder
 
@@ -113,17 +141,17 @@ def AskLabeledImagesAndTextFiles():
     global images, txtFiles, points
     folder = input("Enter the folder's path with all the images "\
                    "and there labels (text files) with the same names (like: 'image1.png', 'image1.txt'): \n")
-    answer = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
+    markTextArea = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
     imagesInFolder, text_in_images = Extract_files_from_folder(folder, True)
     for i in range(len(imagesInFolder)):
-        print(text_in_images[i])
         txt_file = open(text_in_images[i], "r", encoding="utf-8")
         text= txt_file.read()
         txtFiles.append(text)
         txt_file.close()
-        print(txtFiles)
-        image = Image(cv.imread(imagesInFolder[i], 0), isTrain = True, label = txtFiles[i])
-        setBorderOfText(answer, image)
+        #print(txtFiles)
+        image = ImageProcessing(cv.imread(imagesInFolder[i], 0), label = txtFiles[i], imagePath = imagesInFolder[i])
+        if markTextArea:
+            setBorderOfText(image)
         images.append(image)
     return folder
 
@@ -132,11 +160,12 @@ def AskImagesAsInput_tesseract():
     print("Enter all the paths of the images you want to extract text from (when finish insert 'END') :\n ")
     i = 1
     pathImage = input("image " + str(i) + " :").strip('"')
-    answer = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
+    markTextArea = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
     while pathImage != 'END':
         if (CheckImage(pathImage)):
-            image = Image(cv.imread(pathImage, 0), isTrain = False)
-            setBorderOfText(answer, image)
+            image = ImageProcessing(cv.imread(pathImage, 0), imagePath = pathImage)
+            if markTextArea:
+                setBorderOfText(image)
             images.append(image)
             i += 1
         else:
@@ -151,16 +180,16 @@ def main():
     points = []
     isTrain = get_input("Is this a train or test? (train / test)" , ["train","test"]) == "train"
     if (isTrain):
-        is_handwritePage = get_input("Do you want to train the network with your handwrite by using the sccaned pages? (yes/no)",\
-            ["yes", "no"]) == "yes"
-        if (is_handwritePage):
-            AskImagesOfHandwriteTrain()
+        isScanned = get_input("Do you want to use scanned documents (with the rectangles) or you want to use prepare " \
+                                     "data (images and text files)?  (scanned / prepared)",["yes", "no"]) == "yes"
+        if (isScanned):
+            AskScannedImages()
         else:
             AskLabeledImagesAndTextFiles()
     else:
         AskImagesAsInput_tesseract()
 
-    controller = Controller(isTrain, images)
+    controller = Controller(isTrain, images, isScanned = isScanned)
     controller.main()
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+from ImageProcessing import ImageProcessing
+from handwriteDoc import Check_image_page
 import cv2 as cv
 import sys
 import numpy as np
@@ -6,9 +8,10 @@ import os
 
 class Controller():
 
-    def __init__(self, isTrain, images):
+    def __init__(self, isTrain, images, isScanned = False):
         self.isTrain = isTrain
-        self.images = images
+        self.isScanned = isScanned
+        self.image_processing_list = images
         self.text_in_images = []
         self.processedImage = []
 
@@ -24,9 +27,11 @@ class Controller():
 
 
     def processScannedImages(self):
-        for image in self.images:
+        newImagesForTrain =[]
+        for image in self.image_processing_list:
             if image.isHandwrite:
-                pass
+                imageNumPage = Check_image_page(image.imagePath)
+        return newImagesForTrain
 
 
     def PrintExtractText(self):
@@ -35,5 +40,8 @@ class Controller():
 
 
     def main(self):
+        if self.isTrain:
+            if self.isScanned:
+                self.processScannedImages()
         for image in self.images:
-            letterBounds = image.GetLetterBoundsInLine(image.imageArrays["original"])
+            #letterBounds = image.GetLetterBoundsInLine(image.imageArrays["original"])

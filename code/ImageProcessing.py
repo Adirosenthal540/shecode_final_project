@@ -1,58 +1,11 @@
-import cv2 as cv
-import pytesseract
-from matplotlib import pyplot as plt
-from Image import Image
-import sys
 import numpy as np
+import cv2 as cv
+from matplotlib import pyplot as plt
+import sys
 
-WIDTH = 700
-HEIGHT = 800
 PIXEL_REMOVE = 20
-
-def RotateImage():
-    pass
-
-def removePixelsEdge(img, numIdex):
-    widthImg = img.shape[1]
-    heightImg = img.shape[0]
-    imgRemovePixels = img[numIdex:heightImg - numIdex, numIdex:widthImg - numIdex]
-    imgResize = cv.resize(imgRemovePixels, (widthImg, heightImg))
-    return imgResize
-
-def FindLines(img):
-    edges = cv.Canny(img, 50, 150, apertureSize=3)
-    #edges = cv.Canny(gray, 50, 150, apertureSize=3)
-    cv.imshow("edges",edges)
-    cv.waitKey(0)
-    lines = cv.HoughLinesP(edges,1,np.pi/180, 100, minLineLength=300, maxLineGap=20)
-
-    for line in lines:
-        x1, y1, x2, y2 = line[0]
-        cv.line(img, (x1, y1), (x2, y2), (0,255, 0), 2)
-
-    cv.imshow("image", img)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
-
-# def click_event(event, x, y, flags, param):
-#     if event == cv.EVENT_LBUTTONDOWN:
-#         cv.circle(img, (x,y), 3, (0,0,255), -1)
-#         points.append((x,y))
-#         if len(points) >= 2:
-#             cv.line(img, points[-1], points[-2], (255,0,0), 5)
-#         cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-#
-# def selectTextArea(img, points):
-#     cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-#     cv.setMouseCallback("Select_area_of_text-need_to_be_a_square", click_event)
-#     cv.imshow("Select_area_of_text-need_to_be_a_square", img)
-#     cv.waitKey()
-#     cv.destroyAllWindows()
-#     if len(points)<4:
-#         print( "ERROR - YOU NEED TO DROW SQUARE")
-#         sys.exit()
-#     points = np.array(points[0:4])
-#     return points
+THRESHOLDTIGHT = 110
+MINPIXELLETTER = 10 # MIN PIXEL NUM FOR LETTER \ LINE
 
 def reorder(myPoints):
     myPoints = myPoints.reshape((4, 2))
@@ -67,37 +20,139 @@ def reorder(myPoints):
 
     return myPointsNew
 
-def WropImag(img, points):
-    imgContour = img.copy()
-    points = reorder(points)
-    width = img.shape[1]
-    height = img.shape[0]
-    pts1 = np.float32(points)  # PREPARE POINTS FOR WARP
-    pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])  # PREPARE POINTS FOR WARP
-    matrix = cv.getPerspectiveTransform(pts1, pts2)
-    imgWarp = cv.warpPerspective(img, matrix, (width, height))
-    imgWarp = removePixelsEdge(imgWarp, PIXEL_REMOVE)
-    cv.imshow("wrop Image", imgWarp)
-    cv.waitKey(0)
-    return imgWarp
+class ImageProcessing():
 
-def main():
-    global points
-    points=[]
-    img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\unnamed1.jpg", 0)
-    image = Image(img)
+    def __init__(self, imageArray, imagePath, isTrain = False, isHandwrite = False, label = -1):
+        self.imageArray = imageArray
+        self.label = label
+        self.imagePath = imagePath
 
-    image.resize(int((WIDTH / image.ImageWidth())*image.ImageWidth()), int((WIDTH / image.ImageWidth())*image.ImageHeight()))
-    img = image.CopyImageArray()
-    points = selectTextArea(img, points)
 
-    print (type(image))
-    print(image.ImageHeight())
-    print(image.ImageWidth())
-    imgWarp = WropImag(img, points)
-    print(points)
-    # img = cv.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\test_tesseract.png", 0)
-    #
-    # cv.imshow("image",img)
-    # cv.waitKey(0)
-    # FindLines(img)
+    def ImageWidth(self, imageArray):
+        return imageArray.shape[1]
+
+    def ImageHeight(self, imageArray):
+        return imageArray.shape[0]
+
+    def cutImage(self,imageArray, x1, y1, x2, y2):
+        img_cut = imageArray[min(y1,y2):max(y1,y2), min(x1,x2):max(x1,x2)]
+        return img_cut
+
+    def ShowImage(self, imageArray, description, time = 0):
+        cv.imshow(description, imageArray)
+        cv.waitKey(time)
+
+    # def CopyImageArray(self, imageArray):
+    #     return imageArray.copy()
+
+    def resizeImage(self, imageArray, width, height):
+        resizeImg = cv.resize(imageArray, (width, height))
+        return resizeImg
+
+    def RotateImage(self):
+        pass
+
+    def removePixelsEdge(self, img, numPixel):
+        widthImg = img.shape[1]
+        heightImg = img.shape[0]
+        imgRemovePixels = img[numPixel:heightImg - numPixel, numPixel:widthImg - numPixel]
+        imgResize = cv.resize(imgRemovePixels, (widthImg, heightImg))
+        return imgResize
+
+    def FindLines(self, img):
+        edges = cv.Canny(img, 50, 150, apertureSize=3)
+        cv.imshow("edges", edges)
+        cv.waitKey(0)
+        lines = cv.HoughLinesP(edges,1,np.pi/180, 100, minLineLength=300, maxLineGap=20)
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            cv.line(img, (x1, y1), (x2, y2), (0,255, 0), 2)
+
+        cv.imshow("image", img)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+
+    def WropImage(self, img, points):
+        imgContour = img.copy()
+        points = reorder(points)
+        width = img.shape[1]
+        height = img.shape[0]
+        pts1 = np.float32(points)  # PREPARE POINTS FOR WARP
+        pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])  # PREPARE POINTS FOR WARP
+        matrix = cv.getPerspectiveTransform(pts1, pts2)
+        imgWarp = cv.warpPerspective(img, matrix, (width, height))
+        imgWarp = self.removePixelsEdge(imgWarp, PIXEL_REMOVE)
+        cv.imshow("wrop Image", imgWarp)
+        cv.waitKey(5)
+        return imgWarp
+
+    def GetLineBounds(self, img):
+        lineBounds = []
+        minValImage = np.amin(img, axis=1)
+        smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
+        row = 1
+        startL = 0
+        endL = 0
+        imgCopy = img.copy()
+        while row < self.ImageHeight(img):
+            while smallThanTHRESHOLDTIGHT[row]:
+                if smallThanTHRESHOLDTIGHT[row - 1] == False:
+                    startL = row
+                if smallThanTHRESHOLDTIGHT[row + 1] == False:
+                    endL = row
+                row += 1
+            if (smallThanTHRESHOLDTIGHT[row - 1] == True):
+                if endL - startL <= MINPIXELLETTER:
+                    row += 1
+                    continue
+                else:
+                    lineBounds.append((startL, endL))
+                    cv.line(imgCopy, (0,startL), (0,endL), 0, 5)
+                    cv.line(imgCopy, (0,startL), (self.ImageWidth(img),startL), 0, 5)
+                    cv.line(imgCopy, (0,endL), (self.ImageWidth(img),endL), 0, 5)
+            row += 1
+        cv.imshow("line bounds image", imgCopy)
+        cv.waitKey(0)
+
+        return lineBounds
+
+    def FindLetterBoundsInLine(self,img, startLine, endLine):
+        letterBounds = []
+        img_cut = img[startLine : endLine, 0 : img.width]
+        minValImage = np.amin(img_cut, axis=0)
+        smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
+        column = 1
+        startLetter = 0
+        endLetter = 0
+        imgCopy = img.copy()
+        while column < self.ImageWidth(img):
+            while smallThanTHRESHOLDTIGHT[column]:
+                if smallThanTHRESHOLDTIGHT[column - 1] == False:
+                    startLetter = column
+                if smallThanTHRESHOLDTIGHT[column + 1] == False:
+                    endLetter = column
+                    column += 1
+            if (smallThanTHRESHOLDTIGHT[column - 1] == True):
+                if endLetter - startLetter <= MINPIXELLETTER:
+                    column += 1
+                    continue
+                else:
+                    letterBounds.append([(startLetter, startLine), (endLetter,endLine)])
+                    cv.line(imgCopy, (startLetter, startLine), (startLetter, endLine), 0, 5)
+                    cv.line(imgCopy, (endLetter, startLine), (endLetter, endLine), 0, 5)
+                    cv.line(imgCopy, (startLetter, startLine), (endLetter, startLine), 0, 5)
+                    cv.line(imgCopy, (startLetter, endLine), (endLetter, endLine), 0, 5)
+            column += 1
+        cv.imshow("line bounds image", imgCopy)
+        cv.waitKey(0)
+        return letterBounds
+
+    def GetLetterBoundsInLine(self, img):
+        lineBounds = self.GetLineBounds(img)
+        letterBounds = []
+        for lineBound in lineBounds:
+            currentLineLetterBounds = self.FindLetterBoundsInLine(img, lineBound[[0]], lineBound[1])
+            letterBounds. append(currentLineLetterBounds)
+        return letterBounds
+
+

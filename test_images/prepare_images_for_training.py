@@ -1,14 +1,25 @@
 from PIL import Image
 import os
-def convert_image_format(image_path):
-    im = Image.open(image_path)
-    format = im.format
-    sizeFormat = len(format)
-    if format!="TIF":
-        im.save(image_path[:(-1*sizeFormat)]+".tif", 'TIF')
-    os.remove(image_path)
+from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image.exceptions import PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError
 
-for i in range(1, 12):
-    path = "C:\\Users\\Adi Rosental\\Documents\\she_code\\shecode_final_project\\handwriteDoc\\test_train_hebrew\\rows\\" + str(i)+".tiff"
-    path2 = "C:\\Users\\Adi Rosental\\Documents\\she_code\\shecode_final_project\\handwriteDoc\\test_train_hebrew\\rows\\" + str(i)+".tif"
-    os.rename(path, path2)
+
+pdf_path = r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\handwriteDoc\train_songs\ADI_26_9.pdf"
+images = convert_from_path(pdf_path, fmt="jpeg",  poppler_path = r"C:\poppler-20.09.0\bin")
+print(images)
+outputpath = r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\handwriteDoc\train_songs"
+def convert_image_format(im, outputpath):
+
+    format = im.format
+    print(format)
+    # sizeFormat = len(format)
+    # if format!="TIF":
+    print(outputpath)
+    im.save(outputpath, 'TIFF')
+
+i=1
+for image in images:
+    #image = Image.open(im)
+    name_image = "image"+str(i)+".tif"
+    i+=1
+    convert_image_format(image, os.path.join(outputpath, name_image))
