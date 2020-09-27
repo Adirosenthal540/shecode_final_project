@@ -66,7 +66,7 @@ def FindSquaresHandwriteDoc(image):
             h = h - fix*2
             boundries.append((x,y,w,h))
             # cv2.imwrite('ROI_{}.png'.format(image_number), ROI)
-            cv.rectangle(image, (x, y), (x + w, y + h), 255, 7)
+            cv.rectangle(image, (x, y), (x + w, y + h), 255, 5)
     # boundries = np.array(boundries)
     cv.imshow("image", image)
     cv.waitKey(0)
