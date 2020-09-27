@@ -1,5 +1,6 @@
 from ImageProcessing import ImageProcessing
-from handwriteDoc import Check_image_page
+from HandwrittenDoc import Check_image_page, ExportHandriteLinesFromScannedDoc
+from DataManager import Insert_to_database
 import cv2 as cv
 import sys
 import numpy as np
@@ -29,19 +30,16 @@ class Controller():
     def processScannedImages(self):
         newImagesForTrain =[]
         for image in self.image_processing_list:
-            if image.isHandwrite:
-                imageNumPage = Check_image_page(image.imagePath)
-        return newImagesForTrain
-
-
-    def PrintExtractText(self):
-        for text in self.text_in_images:
-            print (text)
+            pageNum = Check_image_page(image.imagePath)
+            newImagesForTrain = ExportHandriteLinesFromScannedDoc(image, pageNum)
+            numS, numE = Insert_to_database(newImagesForTrain)
+        return (numS, numE)
 
 
     def main(self):
         if self.isTrain:
             if self.isScanned:
-                self.processScannedImages()
-        for image in self.images:
-            #letterBounds = image.GetLetterBoundsInLine(image.imageArrays["original"])
+                numS, numE = self.processScannedImages()
+                return ("Sucsses - insert " +str(numE - numS)+ " lines for training, images - " + str(numS) + " to "+str(numE))
+        # for image in self.images:
+        #     letterBounds = image.GetLetterBoundsInLine(image.imageArrays["original"])

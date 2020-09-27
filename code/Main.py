@@ -7,44 +7,51 @@ import sys
 import numpy as np
 from matplotlib import pyplot as plt
 import os
-from pdf2image import convert_from_path, convert_from_bytes
+from pdf2image import convert_from_path
 from pdf2image.exceptions import PDFInfoNotInstalledError, PDFPageCountError, PDFSyntaxError
 
 INPUT_NUM_TRYS = 2
 POPPLER_PATH = "C:\\poppler-20.09.0\\bin"
-
+WIDTH = 600
+HEIGTH = 800
 
 def click_event(event, x, y, flags, param):
     global points
     if event == cv.EVENT_LBUTTONDOWN:
-        cv.circle(imgeSelectEdge, (x, y), 3, (0, 0, 255), -1)
+        cv.circle(imgeSelectEdge, (x, y), 3, 0, -1)
         points.append((x, y))
         if len(points) >= 2:
-            cv.line(imgeSelectEdge, points[-1], points[-2], (255, 0, 0), 5)
+            cv.line(imgeSelectEdge, points[-1], points[-2], 50, 3)
         cv.imshow("Select_area_of_text-need_to_be_a_square", imgeSelectEdge)
 
 
-def selectTextArea(img):
+def setBorderOfText(image):
+    print("Select the edegs of the scanned documents (with 4 points) and close the image's frame ")
     global imgeSelectEdge, points
-    imgeSelectEdge = img
-    cv.imshow("Select_area_of_text-need_to_be_a_square", imgeSelectEdge)
-    cv.setMouseCallback("Select_area_of_text-need_to_be_a_square", click_event)
-    cv.imshow("Select_area_of_text-need_to_be_a_square", imgeSelectEdge)
-    cv.waitKey()
-    cv.destroyAllWindows()
-    if len(points) < 4:
-        print("ERROR - YOU NEED TO DROW SQUARE")
-        sys.exit()
-    points = np.array(points[0:4])
+    copyImage = image.imageArray.copy()
+    userAgreement = True
+    while userAgreement:
+        points = []
+        img = copyImage.copy()
+        imgeSelectEdge = img.copy()
+        cv.imshow("Select_area_of_text-need_to_be_a_square", imgeSelectEdge)
+        cv.setMouseCallback("Select_area_of_text-need_to_be_a_square", click_event)
+        cv.imshow("Select_area_of_text-need_to_be_a_square", imgeSelectEdge)
+        cv.waitKey()
+
+        if len(points) < 4:
+            print("ERROR - YOU NEED TO DROW SQUARE")
+            sys.exit()
+        points = np.array(points[0:4])
+
+        image.WropImage(img, points)
+
+        userAgreement = get_input("do you want to try again? (yes/no) ",
+                                  ["yes", "no"]) == "yes"
+        cv.destroyAllWindows()
+    image.imageArray = img
     return points
 
-
-def setBorderOfText(image):
-    global points
-    points= []
-    print("Select the edegs of the scanned documents (with 4 points) and close the image's frame ")
-    points = selectTextArea(image.imageArray)
-    image.WropImage(image.imageArray, points)
 
 # the func get the "text" request for an input and the possibles values. It ask from the user an input and check if it is right.
 def get_input(text, posible_values):
@@ -66,7 +73,7 @@ def get_input(text, posible_values):
 
 # func check if the file is an image file:
 def CheckImage(file):
-    valid_images = [".jpg", ".gif", ".png", "tif", "tiff"]
+    valid_images = [".jpg", ".gif", ".png", ".tif", ".tiff"]
     ext = os.path.splitext(file)[1]
     if ext.lower() not in valid_images:
         return False
@@ -75,7 +82,7 @@ def CheckImage(file):
 
 def CheckPDF(file):
     ext = os.path.splitext(file)[1]
-    if ext.lower() =='pdf':
+    if ext.lower() =='.pdf':
         return True
     else:
         return False
@@ -85,10 +92,15 @@ def ExtractImagesFromPDF(file, files):
     order = check_PDF_name(file)
     images = convert_from_path(file, fmt="jpeg", poppler_path =POPPLER_PATH)
     outputpath, namefile = os.path.split(file)
+    writerID = namefile.split("_")[0]
     i = 0
     for image in images:
         # image = Image.open(im)
-        new_path_image = os.path.join(outputpath, namefile +"_"+ order[i] + ".tif")
+        new_path_image = os.path.join(outputpath, writerID +"_"+ str(order[i]) + ".tif")
+        j=0
+        while (new_path_image in files):
+            new_path_image = os.path.join(outputpath, writerID + "_"+str(j)+"_" + str(order[i]) + ".tif")
+            j += 1
         i += 1
         image.save(new_path_image, 'TIFF')
         files.append(new_path_image)
@@ -105,7 +117,8 @@ def Extract_files_from_folder(folder,  is_txtFiles=0):
     for file in files:
         if (CheckImage(file) == False):
             if (CheckPDF(file) == True):
-                files = ExtractImagesFromPDF(file, files)
+                files = files + ExtractImagesFromPDF(os.path.join(folder,file), files)
+                continue
         if is_txtFiles:
             nameImage = os.path.splitext(file)[0]
             if nameImage+".txt" in files :
@@ -123,24 +136,29 @@ def Extract_files_from_folder(folder,  is_txtFiles=0):
 
 def AskScannedImages():
     global images, points
-    folder = input("Enter the folder's path with all the images \ PDF : \n /"
-                   "***paid attention*** \n/"
-                   "Images - the image's names should be with the num of the page at the end (like: adi1.png, adi2.png...)/"
-                   " PDF - should write at the end the order of the pages number after bottom line (like: adi_312.pdf, adi_1234.pdf, adi_442311.pdf \n").strip('"')
+    folder = input("Enter the folder's path with all the images \ PDF : \n "
+                   "***paid attention*** \n"
+                   "name of file should start with ID of the : \n"
+                   "Images - the image's names should be with the num of the page at the end (like: 316550797_1.png, 316550797_1.png...)"
+                   "\n If there is more then 1 same page of same writer it need to be seperate like: 316550797_0_1.png, 316550797_1_1.png, 316550797_2_1.png"
+                   "\nPDF - should write at the end the order of the pages number after bottom line (like: 316550797_312.pdf"
+                   " 316550797_1234.pdf, 316550797_442311.pdf \n").strip('"')
     markTextArea = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
     imagesInFolder = Extract_files_from_folder(folder)
     for imageInFolder in imagesInFolder:
-        image = ImageProcessing(cv.imread(imageInFolder, 0), imagePath = imageInFolder)
+        writerID = os.path.basename(imageInFolder).split("_")[0]
+        image = ImageProcessing(cv.imread(imageInFolder, 0), imagePath = imageInFolder, writerID = writerID)
+        image.resizeImage(WIDTH, HEIGTH)
         if (markTextArea):
             setBorderOfText(image)
         images.append(image)
-        return folder
+    return folder
 
 
 def AskLabeledImagesAndTextFiles():
     global images, txtFiles, points
     folder = input("Enter the folder's path with all the images "\
-                   "and there labels (text files) with the same names (like: 'image1.png', 'image1.txt'): \n")
+                   "and there labels (text files) with the same names (like: '316550797_1.png', '316550797_1.txt'): \n")
     markTextArea = get_input("Do you wont to mark the area of the text on the documents? (yes/no) ", ["yes", "no"]) == "yes"
     imagesInFolder, text_in_images = Extract_files_from_folder(folder, True)
     for i in range(len(imagesInFolder)):
@@ -148,8 +166,11 @@ def AskLabeledImagesAndTextFiles():
         text= txt_file.read()
         txtFiles.append(text)
         txt_file.close()
-        #print(txtFiles)
-        image = ImageProcessing(cv.imread(imagesInFolder[i], 0), label = txtFiles[i], imagePath = imagesInFolder[i])
+        imagePath = imagesInFolder[i]
+        writerID = os.path.basename(imagePath).split("_")[0]
+        imageArray  = cv.imread(imagesInFolder[i], 0)
+        image = ImageProcessing(imageArray, label = txtFiles[i], imagePath = imagePath, writerID = writerID)
+        image.resizeImage(WIDTH, HEIGTH)
         if markTextArea:
             setBorderOfText(image)
         images.append(image)
@@ -164,6 +185,7 @@ def AskImagesAsInput_tesseract():
     while pathImage != 'END':
         if (CheckImage(pathImage)):
             image = ImageProcessing(cv.imread(pathImage, 0), imagePath = pathImage)
+            image.resizeImage(WIDTH, HEIGTH)
             if markTextArea:
                 setBorderOfText(image)
             images.append(image)
@@ -181,7 +203,7 @@ def main():
     isTrain = get_input("Is this a train or test? (train / test)" , ["train","test"]) == "train"
     if (isTrain):
         isScanned = get_input("Do you want to use scanned documents (with the rectangles) or you want to use prepare " \
-                                     "data (images and text files)?  (scanned / prepared)",["yes", "no"]) == "yes"
+                                     "data (images and text files)?  (scanned / prepared)",["scanned", "prepared"]) == "scanned"
         if (isScanned):
             AskScannedImages()
         else:
@@ -190,7 +212,8 @@ def main():
         AskImagesAsInput_tesseract()
 
     controller = Controller(isTrain, images, isScanned = isScanned)
-    controller.main()
+    returnfeedback = controller.main()
+    print(returnfeedback)
 
 if __name__ == "__main__":
     main()

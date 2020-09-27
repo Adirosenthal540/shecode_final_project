@@ -3,7 +3,7 @@ import cv2 as cv
 from matplotlib import pyplot as plt
 import sys
 
-PIXEL_REMOVE = 20
+PIXEL_REMOVE = 0
 THRESHOLDTIGHT = 110
 MINPIXELLETTER = 10 # MIN PIXEL NUM FOR LETTER \ LINE
 
@@ -22,11 +22,11 @@ def reorder(myPoints):
 
 class ImageProcessing():
 
-    def __init__(self, imageArray, imagePath, isTrain = False, isHandwrite = False, label = -1):
+    def __init__(self, imageArray, imagePath, Label = -1, writerID = None):
         self.imageArray = imageArray
-        self.label = label
+        self.Label = Label
         self.imagePath = imagePath
-
+        self.writerID = writerID
 
     def ImageWidth(self, imageArray):
         return imageArray.shape[1]
@@ -45,9 +45,9 @@ class ImageProcessing():
     # def CopyImageArray(self, imageArray):
     #     return imageArray.copy()
 
-    def resizeImage(self, imageArray, width, height):
-        resizeImg = cv.resize(imageArray, (width, height))
-        return resizeImg
+    def resizeImage(self, width, height):
+        self.imageArray = cv.resize(self.imageArray, (width, height))
+        return self.imageArray
 
     def RotateImage(self):
         pass
@@ -83,7 +83,7 @@ class ImageProcessing():
         imgWarp = cv.warpPerspective(img, matrix, (width, height))
         imgWarp = self.removePixelsEdge(imgWarp, PIXEL_REMOVE)
         cv.imshow("wrop Image", imgWarp)
-        cv.waitKey(5)
+        cv.waitKey(0)
         return imgWarp
 
     def GetLineBounds(self, img):

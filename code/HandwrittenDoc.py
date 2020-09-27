@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import os
+from ImageProcessing import ImageProcessing
 from PIL import Image
 
 THRESHOLDTIGHT = 110
@@ -31,30 +32,25 @@ def Check_image_page(namefile):
         print("ERROR - Wrong name for the image")
     return (int(num_page))
 
-def FindLabelForBound(self, yMin, yMax, bound, page):
-    image = self.pages[page]
-    heightLine = int((yMax - yMin) / MAXNUMLINES)
-    yMiddleBorder = bound[1] + bound[3] * 0.5
-    for line in range(MAXNUMLINES+1):
-        if (yMin + heightLine * line) <= yMiddleBorder and (yMin + heightLine * (line+1) > yMiddleBorder):
-            return self.FindLableForLine(page, line)
-            #cv.line(image, (0, yMin + heightLine * i), (image.shape[1], yMin + heightLine * i), (0, 0, 255), 5)
-    return -1
+# def FindLabelForBound(self, yMin, yMax, bound, page):
+#     image = self.pages[page]
+#     heightLine = int((yMax - yMin) / MAXNUMLINES)
+#     yMiddleBorder = bound[1] + bound[3] * 0.5
+#     for line in range(MAXNUMLINES+1):
+#         if (yMin + heightLine * line) <= yMiddleBorder and (yMin + heightLine * (line+1) > yMiddleBorder):
+#             return self.FindLabelForLine(page, line)
+#             #cv.line(image, (0, yMin + heightLine * i), (image.shape[1], yMin + heightLine * i), (0, 0, 255), 5)
+#     return -1
 
 def FindSquaresHandwriteDoc(image):
-
-    image = cv.resize(image, (600, 800))
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    mean = gray.mean()
-    std = gray.std()
-    #thresh = cv.threshold(gray, 160, 255, cv.THRESH_BINARY_INV)[1]
-    thresh = cv.threshold(gray, 255 - mean + std, 255, cv.THRESH_BINARY_INV)[1]
+    thresh = cv.threshold(image, 160, 255, cv.THRESH_BINARY_INV)[1]
+    #thresh = cv.threshold(gray, 255 - mean + std, 255, cv.THRESH_BINARY_INV)[1]
     cnts = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
     # min and max area for square, given the fact that there are 10 square in row
-    min_area = (image.shape[1] / 18) * image.shape[1] / 18
-    max_area = (image.shape[1] / 9) * image.shape[1] / 9
+    min_area = (image.shape[0] / 30) * image.shape[1] * 0.75
+    max_area = (image.shape[0] / 15) * image.shape[1]
 
     boundries = []
     for c in cnts:
@@ -63,72 +59,85 @@ def FindSquaresHandwriteDoc(image):
         if area > min_area and area < max_area:
             x, y, w, h = cv.boundingRect(c)
 
-            fixW = int(w * 0.15)
-            fixh = int(h * 0.15)
-            x = x + fixW
-            y = y + fixh
-            w = w - fixW*2
-            h = h - fixh*2
+            fix = int(h * 0.2)
+            x = x + fix
+            y = y + fix
+            w = w - fix*2
+            h = h - fix*2
             boundries.append((x,y,w,h))
             # cv2.imwrite('ROI_{}.png'.format(image_number), ROI)
-            cv.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 2)
-    boundries = np.array(boundries)
-
+            #cv.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 2)
+    # boundries = np.array(boundries)
+    #cv.imshow("image", image)
+    #cv.waitKey(0)
     if len(boundries) < MAXNUMLINES:
         print("ERROR - did'nt recognize all the sqares need to take a picture again or to wrap it")
+        return -1
     elif len(boundries) > MAXNUMLINES:
         print("ERROR - there are noises, need to take a picture again or to wrap it")
+        return -1
     return boundries
 
-# def ExportHandriteImageFromDoc(image, pageNum):
-#     boundries = FindSquaresHandwriteDoc(image)
-#     dicLetters = {}
+def reorderBoundries(boundries):
+    reorderBoundries = []
+    lenList = len(boundries)
+    for i in range(lenList):
+        reorderBoundries.append(boundries[lenList - 1 - i])
+    return reorderBoundries
+
+
+def ExportHandriteLinesFromScannedDoc(image, pageNum):
+    handwrittenDic = HandwrittenDic()
+    newImagesForTrain = []
+    boundries = FindSquaresHandwriteDoc(image.imageArray) # The boundries are order from the bottom of the page up.
+    boundries = reorderBoundries(boundries)
+
+    for i in range(len(boundries)):
+        x, y, w, h =  boundries[i]
+        cutImage = image.cutImage(image.imageArray, x, y, x + w, y + h)
+        Label = handwrittenDic.FindLabelForLine(page = pageNum, lineNum = i+1)
+        newImagesForTrain.append(ImageProcessing(cutImage, imagePath = None, Label = Label, writerID = image.writerID))
+
+    return newImagesForTrain
+
+# def GetLineBounds(imageArray):
+#     lineBounds = []
+#     minValImage = np.amin(imageArray, axis=1)
+#     height = imageArray.shape[0]
+#     width = imageArray.shape[1]
+#     smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
+#     row = 1
+#     startL = 0
+#     endL = 0
+#     imgCopy = imageArray.copy()
+#     while row < height:
+#         while smallThanTHRESHOLDTIGHT[row]:
+#             if smallThanTHRESHOLDTIGHT[row - 1] == False:
+#                 startL = row
+#             if smallThanTHRESHOLDTIGHT[row + 1] == False:
+#                 endL = row
+#             row += 1
+#         if (smallThanTHRESHOLDTIGHT[row - 1] == True):
+#             if endL - startL <= MINPIXELLETTER:
+#                 row += 1
+#                 continue
+#             else:
+#                 lineBounds.append((startL, endL))
+#                 cv.line(imgCopy, (0,startL), (0,endL), 0, 5)
+#                 cv.line(imgCopy, (0,startL), (width,startL), 0, 5)
+#                 cv.line(imgCopy, (0,endL), (width,endL), 0, 5)
+#         row += 1
+#     cv.imshow("line bounds image", imgCopy)
+#     cv.waitKey(0)
 #
-#     yMin = min(boundries[:, 1])
-#     yMax = max(boundries[:, 1] + boundries[:, 3])
-#
-#     for bound in boundries:
-#         label = FindLineOfPoint(yMin, yMax, bound, page)
+#     return lineBounds
 
-
-def GetLineBounds(imageArray):
-    lineBounds = []
-    minValImage = np.amin(imageArray, axis=1)
-    height = imageArray.shape[0]
-    width = imageArray.shape[1]
-    smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
-    row = 1
-    startL = 0
-    endL = 0
-    imgCopy = imageArray.copy()
-    while row < height:
-        while smallThanTHRESHOLDTIGHT[row]:
-            if smallThanTHRESHOLDTIGHT[row - 1] == False:
-                startL = row
-            if smallThanTHRESHOLDTIGHT[row + 1] == False:
-                endL = row
-            row += 1
-        if (smallThanTHRESHOLDTIGHT[row - 1] == True):
-            if endL - startL <= MINPIXELLETTER:
-                row += 1
-                continue
-            else:
-                lineBounds.append((startL, endL))
-                cv.line(imgCopy, (0,startL), (0,endL), 0, 5)
-                cv.line(imgCopy, (0,startL), (width,startL), 0, 5)
-                cv.line(imgCopy, (0,endL), (width,endL), 0, 5)
-        row += 1
-    cv.imshow("line bounds image", imgCopy)
-    cv.waitKey(0)
-
-    return lineBounds
-
-class HandwrittenDoc():
+class HandwrittenDic():
     def __init__(self):
-        self.dicPageLineLable = self.createLableForPageAndLine()
+        self.dicPageLineLabel = self.createLabelForPageAndLine()
 
-    # The function given a line it's label im hebrew
-    def createLableForPageAndLine(self):
+    # The function given a line it's Label im hebrew
+    def createLabelForPageAndLine(self):
         dic = {}
         for page in range(1, 5):
             if page == 1:
@@ -173,12 +182,12 @@ class HandwrittenDoc():
                 dic[(page, 9)] = "בהצלחה באימון!"
         return dic
 
-    def FindLableForLine(self, page, lineNum):
-        label = self.dicPageLineLable[(page, lineNum)]
-        return label
+    def FindLabelForLine(self, page, lineNum):
+        Label = self.dicPageLineLabel[(page, lineNum)]
+        return Label
 
 
-    # def createLableForPageAndLine_not_used(self):
+    # def createLabelForPageAndLine_not_used(self):
     #     dic = {}
     #     for page in range(1, NUMPAGES):
     #         if page == 1:
@@ -229,10 +238,7 @@ class HandwrittenDoc():
 
 
 
-def main():
-    hWD = HandwrittenDoc()
-    image = r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\handwriteDoc\train_songs\image1.tif"
-    bounds = FindSquaresHandwriteDoc()
+
 
 
 
