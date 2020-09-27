@@ -1,2 +1,1 @@
-last num images = 169
-total = 162
+last num images = 72

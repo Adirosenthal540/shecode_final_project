@@ -31,8 +31,8 @@ class Controller():
         newImagesForTrain =[]
         for image in self.image_processing_list:
             pageNum = Check_image_page(image.imagePath)
-            newImagesForTrain = ExportHandriteLinesFromScannedDoc(image, pageNum)
-            numS, numE = Insert_to_database(newImagesForTrain)
+            newImagesForTrain= newImagesForTrain +ExportHandriteLinesFromScannedDoc(image, pageNum)
+        numS, numE = Insert_to_database(newImagesForTrain)
         return (numS, numE)
 
 

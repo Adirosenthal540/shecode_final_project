@@ -50,7 +50,7 @@ def FindSquaresHandwriteDoc(image):
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
     # min and max area for square, given the fact that there are 10 square in row
     min_area = (image.shape[0] / 30) * image.shape[1] * 0.75
-    max_area = (image.shape[0] / 15) * image.shape[1]
+    max_area = (image.shape[0] / 10) * image.shape[1]
 
     boundries = []
     for c in cnts:
@@ -66,10 +66,10 @@ def FindSquaresHandwriteDoc(image):
             h = h - fix*2
             boundries.append((x,y,w,h))
             # cv2.imwrite('ROI_{}.png'.format(image_number), ROI)
-            #cv.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 2)
+            cv.rectangle(image, (x, y), (x + w, y + h), 255, 7)
     # boundries = np.array(boundries)
-    #cv.imshow("image", image)
-    #cv.waitKey(0)
+    cv.imshow("image", image)
+    cv.waitKey(0)
     if len(boundries) < MAXNUMLINES:
         print("ERROR - did'nt recognize all the sqares need to take a picture again or to wrap it")
         return -1
