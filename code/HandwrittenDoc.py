@@ -3,6 +3,7 @@ import cv2 as cv
 import os
 from ImageProcessing import ImageProcessing
 from PIL import Image
+import tempfile
 
 THRESHOLDTIGHT = 110
 MINPIXELLETTER = 10 # MIN PIXEL NUM FOR LETTER \ LINE
@@ -68,8 +69,8 @@ def FindSquaresHandwriteDoc(image):
             # cv2.imwrite('ROI_{}.png'.format(image_number), ROI)
             cv.rectangle(image, (x, y), (x + w, y + h), 255, 5)
     # boundries = np.array(boundries)
-    cv.imshow("image", image)
-    cv.waitKey(0)
+    # cv.imshow("image", image)
+    # cv.waitKey(0)
     if len(boundries) < MAXNUMLINES:
         print("ERROR - did'nt recognize all the sqares need to take a picture again or to wrap it")
         return -1

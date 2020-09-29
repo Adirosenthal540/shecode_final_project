@@ -89,6 +89,7 @@ def CheckPDF(file):
 
 # The Image of the training will be extract to same path where it save
 def ExtractImagesFromPDF(file, files):
+    global delete_files
     order = check_PDF_name(file)
     images = convert_from_path(file, fmt="jpeg", poppler_path =POPPLER_PATH)
     outputpath, namefile = os.path.split(file)
@@ -104,6 +105,7 @@ def ExtractImagesFromPDF(file, files):
         i += 1
         image.save(new_path_image, 'TIFF')
         files.append(new_path_image)
+        delete_files.append(new_path_image)
     return files
 
 # the func save all the paths of the images and text files(optional)
@@ -194,9 +196,13 @@ def AskImagesAsInput_tesseract():
             print("File: "+str(pathImage)+" is not an image file")
         pathImage = input("image " + str(i) + " :").strip('"')
 
+def deleteFiles(delete_files):
+    for file in delete_files:
+        os.remove(file)
 
 def main():
-    global images, txtFiles, points
+    global images, txtFiles, points, delete_files
+    delete_files = []
     images = []
     txtFiles = []
     points = []
@@ -214,6 +220,8 @@ def main():
     controller = Controller(isTrain, images, isScanned = isScanned)
     returnfeedback = controller.main()
     print(returnfeedback)
+
+    deleteFiles(delete_files)
 
 if __name__ == "__main__":
     main()
