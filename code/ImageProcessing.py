@@ -20,13 +20,33 @@ def reorder(myPoints):
 
     return myPointsNew
 
+def removePixelsEdge(img, numPixel):
+    widthImg = img.shape[1]
+    heightImg = img.shape[0]
+    imgRemovePixels = img[numPixel:heightImg - numPixel, numPixel:widthImg - numPixel]
+    imgResize = cv.resize(imgRemovePixels, (widthImg, heightImg))
+    return imgResize
+
+def WrapImage(img, points):
+    imgContour = img.copy()
+    points = reorder(points)
+    width = img.shape[1]
+    height = img.shape[0]
+    pts1 = np.float32(points)  # PREPARE POINTS FOR WARP
+    pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])  # PREPARE POINTS FOR WARP
+    matrix = cv.getPerspectiveTransform(pts1, pts2)
+    imgWarp = cv.warpPerspective(img, matrix, (width, height))
+    imgWarp = removePixelsEdge(imgWarp, PIXEL_REMOVE)
+    # cv.imshow("wrop Image", imgWarp)
+    # cv.waitKey(0)
+    return imgWarp
 class ImageProcessing():
 
-    def __init__(self, imageArray, imagePath, Label = -1, writerID = None):
+    def __init__(self, imageArray, imagePath, Label = -1, handwrite_ID = None):
         self.imageArray = imageArray
         self.Label = Label
         self.imagePath = imagePath
-        self.writerID = writerID
+        self.handwrite_ID = handwrite_ID
 
     def ImageWidth(self, imageArray):
         return imageArray.shape[1]
@@ -52,12 +72,7 @@ class ImageProcessing():
     def RotateImage(self):
         pass
 
-    def removePixelsEdge(self, img, numPixel):
-        widthImg = img.shape[1]
-        heightImg = img.shape[0]
-        imgRemovePixels = img[numPixel:heightImg - numPixel, numPixel:widthImg - numPixel]
-        imgResize = cv.resize(imgRemovePixels, (widthImg, heightImg))
-        return imgResize
+
 
     def FindLines(self, img):
         edges = cv.Canny(img, 50, 150, apertureSize=3)
@@ -72,19 +87,7 @@ class ImageProcessing():
         cv.waitKey(0)
         cv.destroyAllWindows()
 
-    def WropImage(self, img, points):
-        imgContour = img.copy()
-        points = reorder(points)
-        width = img.shape[1]
-        height = img.shape[0]
-        pts1 = np.float32(points)  # PREPARE POINTS FOR WARP
-        pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])  # PREPARE POINTS FOR WARP
-        matrix = cv.getPerspectiveTransform(pts1, pts2)
-        imgWarp = cv.warpPerspective(img, matrix, (width, height))
-        imgWarp = self.removePixelsEdge(imgWarp, PIXEL_REMOVE)
-        cv.imshow("wrop Image", imgWarp)
-        cv.waitKey(0)
-        return imgWarp
+
 
     def GetLineBounds(self, img):
         lineBounds = []

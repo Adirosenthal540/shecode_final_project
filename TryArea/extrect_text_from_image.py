@@ -4,9 +4,10 @@ from matplotlib import pyplot as plt
 import numpy as np
 pytesseract.pytesseract.tesseract_cmd =  r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\Capture5.PNG", 0)
+img = cv2.imread(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\handwriteDoc\train_songs\testPDF\316550797_0_2.tif", 0)
 cv2.imshow("img",img )
 cv2.waitKey(0)
+"""
 #img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 #print(pytesseract.image_to_string(img))
@@ -41,7 +42,7 @@ plt.show()
 
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
+"""
 # lines = cv2.HoughLinesP(binary_thresh,1,np.pi/180, 100, minLineLength=300, maxLineGap=20)
 # print(lines)
 # angle = 0
@@ -54,10 +55,14 @@ cv2.destroyAllWindows()
 # hImg, wImg,_= img.shape
 # boxes = pytesseract.image_to_data((img))
 # print (boxes)
+"""
 str= pytesseract.image_to_string(binary_thresh, lang="heb")
 str= pytesseract.image_to_string(dilation, lang="heb")
 str= pytesseract.image_to_string(drawContours, lang="heb")
 print (str)
+"""
+str= pytesseract.image_to_string(img, lang="heb")
+print ([str])
 # boxes= pytesseract.image_to_boxes(img)
 # for b in boxes.splitlines():
 #     print(b)

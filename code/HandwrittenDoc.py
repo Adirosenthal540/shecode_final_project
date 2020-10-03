@@ -31,7 +31,31 @@ def Check_image_page(namefile):
     max_page_ord = min_page_ord + NUMPAGES
     if ord(num_page) < min_page_ord or ord(num_page) >= max_page_ord:
         print("ERROR - Wrong name for the image")
+        return -1
     return (int(num_page))
+
+def Check_image_name(image_path):
+    flag = 0
+    image_name = os.path.basename(image_path)
+    ext = os.path.splitext(image_name)[1]
+    image_name = image_name[:-(len(ext))]
+    if not ("_" in image_name):
+        flag = 1
+    else:
+        numPges = image_name.split("_")[-1]
+        if numPges!="":
+            min_page_ord = 49
+            max_page_ord = min_page_ord + NUMPAGES
+            for num in numPges:
+                if ord(num) < min_page_ord or ord(num) >= max_page_ord:
+                    flag = 1
+                    break
+        else:
+            flag = 1
+    if flag == 1:
+        return False
+    else:
+        return True
 
 # def FindLabelForBound(self, yMin, yMax, bound, page):
 #     image = self.pages[page]
@@ -97,7 +121,7 @@ def ExportHandriteLinesFromScannedDoc(image, pageNum):
         x, y, w, h =  boundries[i]
         cutImage = image.cutImage(image.imageArray, x, y, x + w, y + h)
         Label = handwrittenDic.FindLabelForLine(page = pageNum, lineNum = i+1)
-        newImagesForTrain.append(ImageProcessing(cutImage, imagePath = None, Label = Label, writerID = image.writerID))
+        newImagesForTrain.append(ImageProcessing(cutImage, imagePath = None, Label = Label, handwrite_ID = image.handwrite_ID))
 
     return newImagesForTrain
 

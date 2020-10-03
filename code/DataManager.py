@@ -1,3 +1,4 @@
+import Main
 import os
 import numpy as np
 from tkinter import *
@@ -14,7 +15,7 @@ DataFolder = r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\Da
 infoFile = r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\DataBase\info.txt"
 
 
-def Insert_to_database(images_processed):
+def Insert_to_database(images_processed, root):
     f = open(infoFile, "r")
     list_of_lines = f.readlines()
     numImage = list_of_lines[0].split(" ")[-1]
@@ -23,8 +24,8 @@ def Insert_to_database(images_processed):
     numImage = int(numImage)
     image_path_list = []
     for imageP in images_processed:
-        if CheckImage(imageP):
-            nameImage = imageP.writerID +"_"+ str(numImage)
+        if CheckImageBeforeDatabase(imageP):
+            nameImage = imageP.handwrite_ID +"_"+ str(numImage)
             pathNewImage = os.path.join(DataFolder, nameImage+".tif")
             image_path_list.append(pathNewImage)
             im = Image.fromarray(imageP.imageArray)
@@ -39,7 +40,10 @@ def Insert_to_database(images_processed):
     a_file.writelines(list_of_lines)
     a_file.close()
 
-    bad_Image = checkData(image_path_list)
+    top = Toplevel()
+    top.title("check database")
+
+    bad_Image = Main.checkData(image_path_list, top)
     delete_from_database(bad_Image)
     return (numStart, numImage)
 
@@ -49,7 +53,7 @@ def delete_from_database(images_list_paths):
         txt_file_path = image_path[:-4]+".gt.txt"
         os.remove(txt_file_path)
 
-def CheckImage(imageP):
+def CheckImageBeforeDatabase(imageP):
     imageArray = imageP.imageArray
     numDarkPixels = np.sum(imageArray < GRAYSHADE)
     numPixelsInImage = imageArray.size
@@ -59,95 +63,9 @@ def CheckImage(imageP):
     else:
         return True
 
-def eccept(image_number):
-    global my_label, button_eccept, button_remove, good_Image, bad_Image, image_list
-    global status, good_Image, image_list
-    good_Image.append(image_path_list[image_number])
-
-    status.grid_forget()
-    button_eccept = Button(root, text="OK", padx=70, pady=20, state=DISABLED, fg="black",
-                           bg="green")
-    button_remove = Button(root, text="Error", padx=70, pady=20, state=DISABLED, fg="black",
-                           bg="red")
-
-    my_label.grid(row=0, column=0, columnspan=3)
-    button_eccept.grid(row=1, column=1)
-    button_remove.grid(row=1, column=2)
-
-def remove(image_number):
-    global my_label, button_eccept, button_remove, status, good_Image, bad_Image, image_list, image_path_list
-    bad_Image.append(image_path_list[image_number])
-    my_label.grid_forget()
-    button_eccept = Button(root, text="OK", padx=70, pady=20, state=DISABLED, fg="black",
-                           bg="green")
-    button_remove = Button(root, text="Error", padx=70, pady=20, state=DISABLED, fg="black",
-                           bg="red")
-    my_label.grid(row=0, column=0, columnspan=3)
-    button_eccept.grid(row=1, column=1)
-    button_remove.grid(row=1, column=2)
-
-def foward(sign, image_number):
-    global my_label, button_eccept, button_remove, status, good_Image, bad_Image, image_list, image_path_list
-
-    if sign:
-        good_Image.append(image_path_list[image_number - 1])
-    else:
-        bad_Image.append(image_path_list[image_number - 1])
-    my_label.grid_forget()
-
-    my_label = Label(image=image_list[image_number])
-    button_eccept = Button(root, text="OK", padx=70, pady=20, command=lambda: foward(True, image_number + 1),
-                           fg="black", bg="green")
-    button_remove = Button(root, text="Error", padx=70, pady=20,
-                           command=lambda: foward(False, image_number + 1), fg="black", bg="red")
-    status = Label(root, text="Image " + str(image_number + 1) + " of " + str(len(image_list)), bd=1, relief=SUNKEN)
-
-    if image_number == len(image_list) - 1:
-        button_eccept = Button(root, text="OK", padx=70, pady=20, command=lambda: eccept(image_number), fg="black",
-                               bg="green")
-        button_remove = Button(root, text="Error", padx=70, pady=20, command=lambda: remove(image_number),
-                               fg="black", bg="red")
-
-    my_label.grid(row=0, column=0, columnspan=3)
-    button_eccept.grid(row=1, column=1)
-    button_remove.grid(row=1, column=2)
-    status.grid(row=2, column=0, columnspan=3)
-
-def exit_program():
-    global root, good_Image, bad_Image
-
-    print("Delete images: ")
-    print(bad_Image)
-    root.quit()
-
-
-def checkData(path_list):
-    global my_label, root, good_Image, bad_Image, image_list, status, image_path_list
-    image_path_list = path_list
-    root = Tk()
-    root.title("Check Data")
-    #root.iconbitmap(r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\test_images\tesseracticon_dk8_icon.ico")
-
-    good_Image = []
-    bad_Image = []
-    image_list = []
-    for image_path in path_list:
-        image_list.append(ImageTk.PhotoImage(Image.open(image_path)))
-
-    status = Label(root, text = "Image 1 of " + str(len(image_list)), bd =1, relief = SUNKEN)
-
-    my_label = Label(image = image_list[0])
-    my_label.grid(row = 0, column = 0, columnspan = 3)
-
-    button_exit = Button(root, text = "Exit",padx = 30, pady = 20, command = exit_program)
-
-    button_eccept = Button(root, text="OK", padx=70, pady=20, command=lambda: foward(True, 1), fg="black", bg="green")
-    button_remove = Button(root, text="Error", padx=70, pady=20, command=lambda: foward(False, 1), fg="black", bg="red")
-
-
-    button_exit.grid(row = 1, column = 0)
-    button_eccept.grid(row = 1, column = 1)
-    button_remove.grid(row = 1, column = 2)
-    status.grid(row=2, column = 0 , columnspan = 3, sticky = W+E)
-    root.mainloop()
-    return bad_Image
+def list_image_path_database():
+    path_list = []
+    for file in os.listdir(DataFolder):
+        if file.endswith(".tif") or file.endswith(".png"):
+            path_list.append(os.path.join(DataFolder, file))
+    return path_list
