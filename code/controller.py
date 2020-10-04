@@ -2,6 +2,7 @@ from ImageProcessing import ImageProcessing
 from HandwrittenDoc import Check_image_page, ExportHandriteLinesFromScannedDoc
 import DataManager
 import ModelTesseract
+from tkinter import messagebox
 import cv2 as cv
 import sys
 import numpy as np
@@ -16,16 +17,35 @@ class Controller():
         self.image_processing_list = images
         self.root = root
 
+    def processLabeledImages(self):
+        newImagesForTrain = []
+        for image in self.image_processing_list:
+            boundries = ImageProcessing.GetLineBounds(cv.imread(image, 0))
+            print(boundries)
+            print(len(boundries))
+            text = image.Label
+            lines = text.split('\n')
+            lines_text = []
+            num_lines = 0
+            for line in lines:
+                if line != "":
+                    num_lines += 1
+                    lines_text.append(line)
+            #print(num_lines)
 
-    def ImageProcessingBeforeTesseract(self):
-        for image in self.images:
-            pass
-
-
-    def ExtractTextFromImage(self):
-        for image in self.images:
-            pass #call testing funcs from "modelTesseract"
-
+            if (num_lines == len(boundries)):
+                for i in range(len(boundries)):
+                    x, y, w, h = boundries[i]
+                    cutImage = image.cutImage(image.imageArray, x, y, x + w, y + h)
+                    Label = lines[i]
+                    newImagesForTrain.append(ImageProcessing(cutImage, imagePath=None, Label=Label, handwrite_ID=image.handwrite_ID))
+            else:
+                #return "The text of image "+ os.path.basename(image.imagePath) + " doesnt match to his text file"
+                message = "The text of image "+ os.path.basename(image.imagePath) + " doesnt match to his text file"
+                messagebox.showerror("ERROR", message)
+                print(message)
+        numS, numE = DataManager.Insert_to_database(newImagesForTrain, self.root)
+        return (numS, numE)
 
     def processScannedImages(self):
         newImagesForTrain =[]
@@ -41,13 +61,14 @@ class Controller():
     def processExportFromImage(self):
         tesseract = ModelTesseract.ModelTesseract()
         text = tesseract.ExportTextTesseract(self.image_processing_list[0].imageArray)
+        # cv.imshow("hhhh",self.image_processing_list[0].imageArray)
+        # cv.waitKey(0)
         return text
 
     def main(self):
         for image in self.image_processing_list:
             print(image.imagePath)
-            cv.imshow("image", image.imageArray)
-            cv.waitKey(0)
+
             print(image.Label)
             print(image.handwrite_ID)
 
@@ -60,5 +81,3 @@ class Controller():
         else:
             text = self.processExportFromImage()
             return text
-        # for image in self.images:
-        #     letterBounds = image.GetLetterBoundsInLine(image.imageArrays["original"])

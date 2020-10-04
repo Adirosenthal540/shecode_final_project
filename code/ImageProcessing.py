@@ -1,10 +1,10 @@
 import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
-import sys
+import sys, math
 
 PIXEL_REMOVE = 0
-THRESHOLDTIGHT = 110
+THRESHOLDTIGHT = 140
 MINPIXELLETTER = 10 # MIN PIXEL NUM FOR LETTER \ LINE
 
 def reorder(myPoints):
@@ -33,13 +33,78 @@ def WrapImage(img, points):
     width = img.shape[1]
     height = img.shape[0]
     pts1 = np.float32(points)  # PREPARE POINTS FOR WARP
+    points2 = list(points)
+    print(points)
+    minx = min(points2[0][0][0], points2[1][0][0])
+    maxx =  max(points2[2][0][0], points2[3][0][0])
+    defx = maxx - minx
+
+    miny = min(points2[0][0][1], points2[2][0][1])
+    maxy =  max(points2[1][0][1], points2[3][0][1])
+    defy = maxy - miny
+
+    height = math.floor((width / defx)*defy)
+
     pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])  # PREPARE POINTS FOR WARP
+    #pts2 = np.float32([[0, 0], [defx, 0], [0, defy], [defx, defy]])  # PREPARE POINTS FOR WARP
+
     matrix = cv.getPerspectiveTransform(pts1, pts2)
     imgWarp = cv.warpPerspective(img, matrix, (width, height))
     imgWarp = removePixelsEdge(imgWarp, PIXEL_REMOVE)
     # cv.imshow("wrop Image", imgWarp)
     # cv.waitKey(0)
     return imgWarp
+
+
+# def WrapImage(img, points):
+#     imgContour = img.copy()
+#     points = reorder(points)
+#     width = img.shape[1]
+#     height = img.shape[0]
+#     pts1 = np.float32(points)  # PREPARE POINTS FOR WARP
+#
+#     pts2 = np.float32([[0, 0], [width, 0], [0, height], [width, height]])  # PREPARE POINTS FOR WARP
+#     matrix = cv.getPerspectiveTransform(pts1, pts2)
+#     imgWarp = cv.warpPerspective(img, matrix, (width, height))
+#     imgWarp = removePixelsEdge(imgWarp, PIXEL_REMOVE)
+#     # cv.imshow("wrop Image", imgWarp)
+#     # cv.waitKey(0)
+#     return imgWarp
+
+
+def GetLineBounds(img):
+    lineBounds = []
+    minValImage = np.amin(img, axis=1)
+    smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
+    row = 1
+    startL = 0
+    endL = 0
+    imgCopy = img.copy()
+    width = img.shape[1]
+    height = img.shape[0]
+    while row < height:
+        while smallThanTHRESHOLDTIGHT[row]:
+            if smallThanTHRESHOLDTIGHT[row - 1] == False:
+                startL = row
+            if smallThanTHRESHOLDTIGHT[row + 1] == False:
+                endL = row
+            row += 1
+        if (smallThanTHRESHOLDTIGHT[row - 1] == True):
+            if endL - startL <= MINPIXELLETTER:
+                row += 1
+                continue
+            else:
+                lineBounds.append((0, startL, width, endL-startL))
+                cv.line(imgCopy, (0,startL), (0,endL), 0, 5)
+                cv.line(imgCopy, (0,startL), (width,startL), 0, 5)
+                cv.line(imgCopy, (0,endL), (width,endL), 0, 5)
+        row += 1
+    cv.imshow("line bounds image", imgCopy)
+    cv.waitKey(0)
+
+    return lineBounds
+
+
 class ImageProcessing():
 
     def __init__(self, imageArray, imagePath, Label = -1, handwrite_ID = None):
@@ -47,12 +112,6 @@ class ImageProcessing():
         self.Label = Label
         self.imagePath = imagePath
         self.handwrite_ID = handwrite_ID
-
-    def ImageWidth(self, imageArray):
-        return imageArray.shape[1]
-
-    def ImageHeight(self, imageArray):
-        return imageArray.shape[0]
 
     def cutImage(self,imageArray, x1, y1, x2, y2):
         img_cut = imageArray[min(y1,y2):max(y1,y2), min(x1,x2):max(x1,x2)]
@@ -89,35 +148,7 @@ class ImageProcessing():
 
 
 
-    def GetLineBounds(self, img):
-        lineBounds = []
-        minValImage = np.amin(img, axis=1)
-        smallThanTHRESHOLDTIGHT = minValImage < THRESHOLDTIGHT
-        row = 1
-        startL = 0
-        endL = 0
-        imgCopy = img.copy()
-        while row < self.ImageHeight(img):
-            while smallThanTHRESHOLDTIGHT[row]:
-                if smallThanTHRESHOLDTIGHT[row - 1] == False:
-                    startL = row
-                if smallThanTHRESHOLDTIGHT[row + 1] == False:
-                    endL = row
-                row += 1
-            if (smallThanTHRESHOLDTIGHT[row - 1] == True):
-                if endL - startL <= MINPIXELLETTER:
-                    row += 1
-                    continue
-                else:
-                    lineBounds.append((startL, endL))
-                    cv.line(imgCopy, (0,startL), (0,endL), 0, 5)
-                    cv.line(imgCopy, (0,startL), (self.ImageWidth(img),startL), 0, 5)
-                    cv.line(imgCopy, (0,endL), (self.ImageWidth(img),endL), 0, 5)
-            row += 1
-        cv.imshow("line bounds image", imgCopy)
-        cv.waitKey(0)
 
-        return lineBounds
 
     def FindLetterBoundsInLine(self,img, startLine, endLine):
         letterBounds = []
