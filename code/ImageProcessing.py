@@ -99,8 +99,8 @@ def GetLineBounds(img):
                 cv.line(imgCopy, (0,startL), (width,startL), 0, 5)
                 cv.line(imgCopy, (0,endL), (width,endL), 0, 5)
         row += 1
-    cv.imshow("line bounds image", imgCopy)
-    cv.waitKey(0)
+    # cv.imshow("line bounds image", imgCopy)
+    # cv.waitKey(0)
 
     return lineBounds
 

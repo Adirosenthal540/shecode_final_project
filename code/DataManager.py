@@ -15,7 +15,7 @@ DataFolder = r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\Da
 infoFile = r"C:\Users\Adi Rosental\Documents\she_code\shecode_final_project\DataBase\info.txt"
 
 
-def Insert_to_database(images_processed, root):
+def Insert_to_database(images_processed):
     f = open(infoFile, "r")
     list_of_lines = f.readlines()
     numImage = list_of_lines[0].split(" ")[-1]
@@ -69,3 +69,18 @@ def list_image_path_database():
         if file.endswith(".tif") or file.endswith(".png"):
             path_list.append(os.path.join(DataFolder, file))
     return path_list
+
+def getLabelFromDatabase(path_image):
+    try :
+        text_file = path_image[:-4]+".gt.txt"
+        if os.path.exists(path_image):
+            txt_file = open(text_file, "r", encoding="utf-8")
+            text = txt_file.read()
+            txt_file.close()
+            return text
+        else:
+            return -1
+
+    except :
+        return -1
+

@@ -20,7 +20,7 @@ class Controller():
     def processLabeledImages(self):
         newImagesForTrain = []
         for image in self.image_processing_list:
-            boundries = ImageProcessing.GetLineBounds(cv.imread(image, 0))
+            boundries = ImageProcessing.GetLineBounds(image.imageArray)
             print(boundries)
             print(len(boundries))
             text = image.Label
@@ -44,7 +44,7 @@ class Controller():
                 message = "The text of image "+ os.path.basename(image.imagePath) + " doesnt match to his text file"
                 messagebox.showerror("ERROR", message)
                 print(message)
-        numS, numE = DataManager.Insert_to_database(newImagesForTrain, self.root)
+        numS, numE = DataManager.Insert_to_database(newImagesForTrain)
         return (numS, numE)
 
     def processScannedImages(self):
@@ -52,7 +52,7 @@ class Controller():
         for image in self.image_processing_list:
             pageNum = Check_image_page(image.imagePath)
             newImagesForTrain= newImagesForTrain + ExportHandriteLinesFromScannedDoc(image, pageNum)
-        numS, numE = DataManager.Insert_to_database(newImagesForTrain, self.root)
+        numS, numE = DataManager.Insert_to_database(newImagesForTrain)
         return (numS, numE)
 
     def processLabeledImages(self):

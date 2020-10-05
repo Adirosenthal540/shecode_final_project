@@ -50,7 +50,7 @@ images_numpy_array_show = []
 imageTK_list = []
 images_path_list = []
 original_image_array = []
-
+LABEL = ":תיוג"
 
 points = []
 images_path_list = []
@@ -310,7 +310,7 @@ def Select_train_test(var):
 
 def eccept(image_number, path_list):
     global my_image_check_data, button_eccept, button_remove, good_Image, bad_Image, image_list, root_window
-    global status, good_Image, image_list
+    global status, good_Image, image_list, my_label_check_data
     good_Image.append(path_list[image_number])
 
     status.grid_forget()
@@ -322,7 +322,16 @@ def eccept(image_number, path_list):
                            bg="red")
 
     status = Label(root_checkData, text="Image " + str(image_number + 1) + " of " + str(len(image_list)), bd=1, relief=SUNKEN)
-    status.grid(row=2, column=0, columnspan=3)
+    label_image_name = DataManager.getLabelFromDatabase(path_list[image_number])
+    if label_image_name == -1:
+        popup_message("The text file of image - "+ os.path.basename(image_list[image_number]) +" not found", maessage_type(2))
+        label_image_name = "ERROR"
+    label_title = Label(root_checkData, text = LABEL, anchor = "e")
+    my_label_check_data = Label(root_checkData, text = label_image_name, anchor = "e")
+
+    label_title.grid(row=2, column=0, columnspan=3, sticky = "ew", pady=5)
+    my_label_check_data.grid(row=3, column=0, columnspan=3, sticky = "ew")
+    status.grid(row=4, column=0, columnspan=3)
 
     my_image_check_data.grid(row=0, column=0, columnspan=3, sticky = W+E)
     button_eccept.grid(row=1, column=1, sticky = W+E)
@@ -339,7 +348,16 @@ def remove(image_number, path_list):
     button_remove = Button(root_checkData, text="Error", padx=70, pady=20, state=DISABLED, fg="black",
                            bg="red")
     status = Label(root_checkData, text="Image " + str(image_number + 1) + " of " + str(len(image_list)), bd=1, relief=SUNKEN)
-    status.grid(row=2, column=0, columnspan=3)
+    label_image_name = DataManager.getLabelFromDatabase(path_list[image_number])
+    if label_image_name == -1:
+        popup_message("The text file of image - "+ os.path.basename(image_list[image_number]) +" not found", maessage_type(2))
+        label_image_name = "ERROR"
+    label_title = Label(root_checkData, text = LABEL, anchor = "e")
+    my_label_check_data = Label(root_checkData, text = label_image_name, anchor = "e")
+
+    label_title.grid(row=2, column=0, columnspan=3, sticky = "ew", pady=5)
+    my_label_check_data.grid(row=3, column=0, columnspan=3, sticky = "ew")
+    status.grid(row=4, column=0, columnspan=3)
     my_image_check_data.grid(row=0, column=0, columnspan=3)
     button_eccept.grid(row=1, column=1)
     button_remove.grid(row=1, column=2)
@@ -364,7 +382,16 @@ def foward(sign, image_number, path_list):
         button_remove = Button(root_checkData, text="Error", padx=70, pady=20,
                                command=lambda: foward(False, image_number + 1, path_list), fg="black", bg="red")
     status = Label(root_checkData, text="Image " + str(image_number + 1) + " of " + str(len(image_list)), bd=1, relief=SUNKEN)
-    status.grid(row=2, column=0, columnspan=3)
+    label_image_name = DataManager.getLabelFromDatabase(path_list[image_number])
+    if label_image_name == -1:
+        popup_message("The text file of image - "+ os.path.basename(image_list[image_number]) +" not found", maessage_type(2))
+        label_image_name = "ERROR"
+    label_title = Label(root_checkData, text = LABEL, anchor = "e")
+    my_label_check_data = Label(root_checkData, text = label_image_name, anchor = "e")
+
+    label_title.grid(row=2, column=0, columnspan=3, sticky = "ew", pady=5)
+    my_label_check_data.grid(row=3, column=0, columnspan=3, sticky = "ew")
+    status.grid(row=4, column=0, columnspan=3)
     my_image_check_data.grid(row=0, column=0, columnspan=3)
     button_eccept.grid(row=1, column=1)
     button_remove.grid(row=1, column=2)
@@ -373,6 +400,13 @@ def foward(sign, image_number, path_list):
 def exit_program(root):
     root.destroy()
 
+def exit_check_data(root, bad_Image):
+    root.destroy()
+    DataManager.delete_from_database(bad_Image)
+    if bad_Image!=[]:
+        popup_message("Deleted images", maessage_type(0))
+    else:
+        popup_message("THANK YOU :)", maessage_type(0))
 
 def checkData(path_list, top):
     global my_image_check_data, good_Image, bad_Image, image_list, status, root_checkData
@@ -389,11 +423,20 @@ def checkData(path_list, top):
         image_list.append(imageTK)
 
     status = Label(root_checkData, text = "Image 1 of " + str(len(image_list)), bd =1, relief = SUNKEN)
+    label_image_name = DataManager.getLabelFromDatabase(path_list[0])
+    if label_image_name == -1:
+        popup_message("The text file of image - "+ os.path.basename(path_list[0]) +" not found", maessage_type(2))
+        label_image_name = "ERROR"
+    label_title = Label(root_checkData, text = LABEL, anchor = "e")
+    my_label_check_data = Label(root_checkData, text = label_image_name, anchor = "e")
+
+    label_title.grid(row=2, column=0, columnspan=3, sticky = "ew", pady=5)
+    my_label_check_data.grid(row=3, column=0, columnspan=3, sticky = "ew")
 
     my_image_check_data = Label(root_checkData, image = image_list[0], width  = IMAGE_WIDTH_TO_SHOW)
     my_image_check_data.grid(row = 0, column = 0, columnspan = 3)
 
-    button_exit = Button(root_checkData, text = "Exit",padx = 30, pady = 20, command = lambda: exit_program(root_checkData))
+    button_exit = Button(root_checkData, text = "Exit",padx = 30, pady = 20, command = lambda: exit_check_data(root_checkData, bad_Image))
 
     button_eccept = Button(root_checkData, text="OK", padx=70, pady=20, command=lambda: foward(True, 1, path_list), fg="black", bg="green")
     button_remove = Button(root_checkData, text="Error", padx=70, pady=20, command=lambda: foward(False, 1, path_list), fg="black", bg="red")
@@ -401,7 +444,7 @@ def checkData(path_list, top):
     button_exit.grid(row = 1, column = 0)
     button_eccept.grid(row = 1, column = 1)
     button_remove.grid(row = 1, column = 2)
-    status.grid(row=2, column = 0 , columnspan = 3, sticky = W+E)
+    status.grid(row=4, column = 0 , columnspan = 3, sticky = W+E)
     root_checkData.mainloop()
     return bad_Image
 
@@ -410,8 +453,8 @@ def new_window_check_database(root):
     top = Toplevel()
     #top.geometry(str(IMAGE_WIDTH_TO_SHOW)+"x"+str(IMAGE_HEIGHT_TO_SHOW))
     top.title("check database")
-    bad_Image = checkData(path_list, top)
-    DataManager.delete_from_database(bad_Image)
+    checkData(path_list, top)
+
 
 def covert_points_from_resize_to_original(points, resizeImage, originalImage):
     width_resizeImage = resizeImage.shape[1]
@@ -489,7 +532,7 @@ def CutImage(eventorigin):
     button_wrap.grid(row = 1, column = 1,  columnspan = 2, sticky = W+E)
     button_next.grid(row = 0, column =4)
     button_previous.grid(row = 0, column = 0)
-    status.grid(row=2, column = 0 , columnspan = 3, sticky = W+E)
+    status.grid(row=3, column = 0 , columnspan = 3, sticky = W+E)
     root_window.mainloop()
 
 def next( image_number):
@@ -513,7 +556,7 @@ def next( image_number):
     my_image.grid(row=0, column=1, columnspan=3)
     button_next.grid(row = 0, column =4)
     button_previous.grid(row=0, column=0)
-    status.grid(row=2, column=0, columnspan=3, sticky = W+E)
+    status.grid(row=3, column=0, columnspan=3, sticky = W+E)
 
 
 def back( image_number):
@@ -535,7 +578,7 @@ def back( image_number):
     my_image.grid(row=0, column=1, columnspan=3)
     button_next.grid(row = 0, column =4)
     button_previous.grid(row=0, column = 0)
-    status.grid(row=2, column=0, columnspan=3, sticky = W+E)
+    status.grid(row=3, column=0, columnspan=3, sticky = W+E)
 
 def exit_wrap():
     global root_window
@@ -562,7 +605,7 @@ def wrap_data():
     button_wrap.grid(row = 1, column = 1,  columnspan = 2, sticky = W+E)
     button_next.grid(row = 0, column =4)
     button_previous.grid(row = 0, column = 0)
-    status.grid(row=2, column = 0 , columnspan = 3, sticky = W+E)
+    status.grid(row=3, column = 0 , columnspan = 3, sticky = W+E)
     root.mainloop()
 
 
@@ -755,7 +798,7 @@ def main():
 
     root.config(menu=menubar)
 
-    options = ["-", Status_program(0),Status_program(1)]
+    options = ["please choose", Status_program(0),Status_program(1)]
 
     clicked = StringVar()
     clicked.set(options[0])
